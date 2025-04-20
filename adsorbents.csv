@@ -1,15 +1,15 @@
 "Name", "Type of Adsorbent", "BET Surface Area","Pore volume","Adsorption capacity","Conditions T","Conditions P"
-"Zeolite 13X-K","Zeolite","591","0.25","6.9","298", "20"  
-"Zeolite 13X", "Zeolite", "369", "0.92", "3.3", "303", "1"
-"ZM-BF", "Zeolite", "611", "0.34", "5.58", "298", "1"
-"SBA-10-A APTES", "Amine Based", "269", "0.36", "1.21", "303", "1"
-"silica sphere APTES", "Amine Based", "292", "0.94", "1.67", "298", "1"
-"TIFSIX-Cu-TPA", "MOF", "1380", "0.58", "4.71", "298", "1"
-"opt-UiO-66(Zr)-(OH)2", "MOF","1230", , "5.63", "298", "1"
-"MIL-101-35", "MOF", "800", "0.47", "2.50", "298", "1"
-"HCP-5", "POP", "992", "1.06", "2.72", "298", "1"
-"TBAL-POP-2", "POP", "1104", "1.03", "3.90", "298", "1"
-"PolyHIPE-PE30-4", "POP", "3.16", "0.003", "6.22", "348", "0.1"
-"CAC-S", "Carbon-Based", "1149", "1.73", "4.28", "298", "1"
-"ACDS-800-4", "Carbon-Based", "2367", "1.15", "4.36", "298", "1"
-"AC", "Carbon-Based", "1097", "0.83", "3.10", "298", "1"
+"Zeolite 13X-K","Zeolite", 591 , 0.25 , 6.9 , 298 , 20 
+"Zeolite 13X", "Zeolite", 369, 0.92, 3.3, 303, 1
+"ZM-BF", "Zeolite", 611, 0.34, 5.58, 298, 1
+"SBA-10-A APTES", "Amine Based", 269, 0.36, 1.21, 303, 1
+"silica sphere APTES", "Amine Based", 292, 0.94, 1.67, 298, 1
+"TIFSIX-Cu-TPA", "MOF", 1380, 0.58, 4.71, 298, 1
+"opt-UiO-66(Zr)-(OH)2", "MOF",1230, , 5.63, 298, 1
+"MIL-101-35", "MOF", 800, 0.47, 2.50, 298, 1
+"HCP-5", "POP", 992, 1.06, 2.72, 298, 1
+"TBAL-POP-2", "POP", 1104, 1.03, 3.90, 298, 1
+"PolyHIPE-PE30-4", "POP", 3.16, 0.003, 6.22, 348, 0.1
+"CAC-S", "Carbon-Based", 1149, 1.73, 4.28, 298, 1
+"ACDS-800-4", "Carbon-Based", 2367, 1.15, 4.36, 298, 1
+"AC", "Carbon-Based", 1097, 0.83, 3.10, 298, 1
