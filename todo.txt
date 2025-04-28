@@ -1,0 +1,14 @@
+- Rajouter adsorbants
+- Rajouter infos sur adsorbants
+- Implémenter Dash
+- Décider/implémenter les infos sur hover
+- Faire des filtres/sliders
+- Formatter le graphe
+
+- rendre le site joli
+- faire le package/tests/README/etc
+
+
+éventuellement:
+- clusters
+- smiles/molobjects/...
