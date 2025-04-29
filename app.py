@@ -15,7 +15,7 @@ app.layout = html.Div([
 
         html.Div([
             dcc.Dropdown(
-                df.columns[2:6].unique(),
+                df.columns[2:5].unique(),
                 'BET Surface Area',
                 id='xaxis-column'
             ),
@@ -23,26 +23,39 @@ app.layout = html.Div([
 
         html.Div([
             dcc.Dropdown(
-                df.columns[2:6].unique(),
+                df.columns[2:5].unique(),
                 'Pore volume',
                 id='yaxis-column'
             ),
         ], style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
-    dcc.Graph(id='indicator-graphic')
+    dcc.Graph(id='indicator-graphic'),
+    html.Div([
+    dcc.Slider(id='value-slider')
+    ], style={'width': '95%', 'padding': '20px'})
 ])
 
 
 @callback(
     Output('indicator-graphic', 'figure'),
     Input('xaxis-column', 'value'),
-    Input('yaxis-column', 'value'),
+    Input('yaxis-column', 'value')
 )
 
-def update_graph(x,y):
-    fig = px.scatter(x = 'xaxis-column',
-                     y = 'yaxis-column')
+def update_graph(xaxis_column_name, yaxis_column_name):
+    fig = px.scatter(
+        df,
+        x=xaxis_column_name,
+        y=yaxis_column_name,
+        color=df.columns[1],         # Color based on second column
+        hover_name=df.columns[0],    # Hover label from the first column (optional)
+        title=f'{yaxis_column_name} vs {xaxis_column_name}',
+        hover_data=["Conditions T", "Conditions P"]
+    )
+    fig.update_layout(transition_duration=500)
     return fig
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
