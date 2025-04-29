@@ -1,34 +1,48 @@
-from dash import Dash, html, dash_table, dcc, callback, Output, Input
-import pandas as pd
+from dash import Dash, dcc, html, Input, Output, callback
 import plotly.express as px
 from pathlib import Path
 
-#Initializing the  app 
+import pandas as pd
+
 app = Dash()
 
-#Incorporating data
 cwd = Path.cwd()
 csv_file = cwd / "adsorbents.csv"
-df2 = pd.read_csv(csv_file, sep=",")
-df2.head()
+df = pd.read_csv(csv_file, sep=",")
 
-#App layout
-app.layout =[
-    html.Div(children = 'Adsorbent Data'),
-    html.Hr(),
-    dcc.RadioItems(options=['BET Surface Area', 'Pore volume', 'Adsorption capacity']),
-    dash_table.DataTable(data=df2.to_dict('records'), page_size=14),
-    dcc.Graph(figure={}, id='my-final-graph-example'),
-] 
+app.layout = html.Div([
+    html.Div([
+
+        html.Div([
+            dcc.Dropdown(
+                df.columns[2:6].unique(),
+                'BET Surface Area',
+                id='xaxis-column'
+            ),
+        ], style={'width': '48%', 'display': 'inline-block'}),
+
+        html.Div([
+            dcc.Dropdown(
+                df.columns[2:6].unique(),
+                'Pore volume',
+                id='yaxis-column'
+            ),
+        ], style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
+    ]),
+    dcc.Graph(id='indicator-graphic')
+])
+
 
 @callback(
-    Output(component_id='my-final-graph-example', component_property='figure'),
-    Input(component_id='my-final-radio-item-example', component_property='value')
+    Output('indicator-graphic', 'figure'),
+    Input('xaxis-column', 'value'),
+    Input('yaxis-column', 'value'),
 )
-def update_graph(col_chosen_x,col_chosen_y):
-    fig = px.histogram(df2, x=col_chosen_x, y=col_chosen_y, histfunc='avg')
+
+def update_graph(x,y):
+    fig = px.scatter(x = 'xaxis-column',
+                     y = 'yaxis-column')
     return fig
 
-# Run the app
 if __name__ == '__main__':
     app.run(debug=True)
