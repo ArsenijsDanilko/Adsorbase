@@ -6,16 +6,16 @@ import pandas as pd
 
 
 cwd = Path.cwd()
-csv_file = cwd / "adsorbents.csv"
-df = pd.read_csv(csv_file, sep=",")
-data_options = list(df.head(1))
+csv_file = cwd / 'adsorbents.csv'
+df = pd.read_csv(csv_file, sep=',')
+data_options = list(df.head(1))[2:]
 
 # Unit Dicts
-units = {"BET Surface Area": "BET Surface Area [m<sup>2</sup>/g]",
-         "Pore volume": "Pore volume [cm<sup>3</sup>/g]",
-         "Adsorption capacity": "Adsorption capacity [mmol/g]",
-         "Conditions T": "Conditions T [K]",
-         "Conditions P": "Conditions P [bar]"}
+units = {'BET Surface Area': 'BET Surface Area [m<sup>2</sup>/g]',
+         'Pore volume': 'Pore volume [cm<sup>3</sup>/g]',
+         'Adsorption capacity': 'Adsorption capacity [mmol/g]',
+         'Conditions T': 'Conditions T [K]',
+         'Conditions P': 'Conditions P [bar]'}
 
 # Default styles
 light_style = {
@@ -76,10 +76,10 @@ app.layout = html.Div([
     ]),
     dcc.Graph(id='indicator-graphic'),
     html.Div([
-        html.Label("Select hover data:"),
+        html.Label('Select hover data:'),
         dcc.Dropdown(
-            id="hover-dropdown",
-            options=[{"label": col, "value": col}
+            id='hover-dropdown',
+            options=[{'label': col, 'value': col}
                      for col in data_options],
             value=[],
             multi=True,
@@ -87,11 +87,23 @@ app.layout = html.Div([
     ]),
 ], id='main-div', style=light_style)
 
+# Callback to update hover dropdown options
+
+
+@app.callback(
+    Output('hover-dropdown', 'options'),
+    Input('xaxis-column', 'value'),
+    Input('yaxis-column', 'value')
+)
+def update_hover_dropdown(x_axis, y_axis):
+    hover_candidates = [
+        col for col in data_options if col not in (x_axis, y_axis)]
+
+    return [{'label': col, 'value': col} for col in hover_candidates]
 
 # Callback to update graph
 data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
               'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P')
-
 
 @app.callback(
     Output('indicator-graphic', 'figure'),
@@ -121,7 +133,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
 
         hoverlabel=dict(
             font_size=16,
-            font_family="Arial"
+            font_family='Arial'
         )
     )
 
@@ -134,7 +146,6 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
 
     # Format of the hover cells
     fig.update_traces(
-
         hovertemplate="<b>%{customdata[0]} </b><br>" +
         "<i>%{customdata[1]}</i><br><br>" +
         f"{units[xaxis_column_name]}" + " : %{x:.2f} <br>" +
@@ -150,17 +161,17 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
 
     if is_dark_mode:
         fig.update_layout(
-            paper_bgcolor="#2a2a2a",    # Graph area background
-            plot_bgcolor="#2a2a2a",     # Plot area background
-            font_color="white",         # Text color
-            title_font_color="white",
+            paper_bgcolor='#2a2a2a',    # Graph area background
+            plot_bgcolor='#2a2a2a',     # Plot area background
+            font_color='white',         # Text color
+            title_font_color='white',
             xaxis=dict(
-                gridcolor="#444",       # Grid line color
-                color="white"           # Axis label color
+                gridcolor='#444',       # Grid line color
+                color='white'           # Axis label color
             ),
             yaxis=dict(
-                gridcolor="#444",
-                color="white"
+                gridcolor='#444',
+                color='white'
             ),
         )
 
