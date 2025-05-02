@@ -75,18 +75,17 @@ app.layout = html.Div([
         ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
     html.Div([
-        html.Label("Select the right conditions"),
-        dcc.Slider(
+        html.Label("Select the right temperature conditions"),
+        dcc.RangeSlider(
             df['Conditions T'].min(),
             df['Conditions T'].max(),
-            value = df['Conditions T'].max(),
             step=None,
             id='Temp-slider'
         ),
-        dcc.Slider(
+        html.Label("Select the right pressure conditions"),
+        dcc.RangeSlider(
             df['Conditions P'].min(),
             df['Conditions P'].max(),
-            value = df['Conditions P'].max(),
             step = None,
             id='Pressure-slider'
         )
@@ -115,15 +114,18 @@ app.layout = html.Div([
     Input('Temp-slider', 'value'),
     Input('Pressure-slider','value')
 )
-def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, selected_temp, selected_pres):
+def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range):
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
     
-    filtered_df = df[df['Conditions T'] <= selected_temp]
-    new_df = filtered_df[filtered_df['Conditions P'] <=selected_pres]
+    filtered_df = df
+    if (t_range is not None) and (p_range is not None):
+        filtered_df = df[(t_range[0] <= df['Conditions T']) & (df['Conditions T'] <= t_range[1])]
+        filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (filtered_df['Conditions P'] <= p_range[1])]
+    
     
     fig = px.scatter(
-        new_df,
+        filtered_df,
         x=xaxis_column_name,
         y=yaxis_column_name,
         color=df.columns[1],
