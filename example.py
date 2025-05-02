@@ -26,6 +26,31 @@ fig_pca = px.scatter(
     hover_name="Name",
     width=1200,
     height=800,
+    custom_data=['Name', 'Type of Adsorbent','BET Surface Area','Pore volume','Adsorption capacity','Conditions T','Conditions P']
+)
+
+fig_pca.update_layout(
+    
+    hoverlabel=dict(
+        font_size=16,
+        font_family="Arial"   
+    )
+
+)
+
+fig_pca.update_traces(
+
+    hovertemplate =
+                "<b>%{customdata[0]} </b><br>" +
+                "<i>%{customdata[1]}</i><br><br>" +
+                "Pore Volume : %{x:,.2f} cm<sup>3</sup>/g <br>" +
+                "Adsorption capacity : %{y:.2f} mmol/g <br>" +
+                "<extra></extra>",
+
+    mode='markers',
+
+    marker={'sizemode':'area',
+            'sizeref':10},
 )
 
 # populate with molecule information
