@@ -87,9 +87,8 @@ app.layout = html.Div([
     ]),
 ], id='main-div', style=light_style)
 
+
 # Callback to update hover dropdown options
-
-
 @app.callback(
     Output('hover-dropdown', 'options'),
     Input('xaxis-column', 'value'),
@@ -130,7 +129,6 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
 
     # Style of the hover cells
     fig.update_layout(
-
         hoverlabel=dict(
             font_size=16,
             font_family='Arial'
