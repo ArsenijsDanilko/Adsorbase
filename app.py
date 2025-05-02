@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc, Input, Output
+from dash import Dash, dcc, html, Input, Output
 import pandas as pd
 from pathlib import Path
 import plotly.express as px
@@ -15,6 +15,7 @@ data_options = [
     "Conditions T",
     "Conditions P",
 ]
+
 data_options = list(df.head(1))
 app.layout = html.Div(
     [
@@ -60,7 +61,8 @@ app.layout = html.Div(
                 html.Label("Select hover data:"),
                 dcc.Dropdown(
                     id="hover-dropdown",
-                    options=[{"label": col, "value": col} for col in data_options],
+                    options=[{"label": col, "value": col}
+                             for col in data_options],
                     value=[],
                     multi=True,
                 ),
