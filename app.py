@@ -74,6 +74,23 @@ app.layout = html.Div([
             ),
         ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
+    html.Div([
+        html.Label("Select the right conditions"),
+        dcc.Slider(
+            df['Conditions T'].min(),
+            df['Conditions T'].max(),
+            value = df['Conditions T'].max(),
+            step=None,
+            id='Temp-slider'
+        ),
+        dcc.Slider(
+            df['Conditions P'].min(),
+            df['Conditions P'].max(),
+            value = df['Conditions P'].max(),
+            step = None,
+            id='Pressure-slider'
+        )
+    ]),
     dcc.Graph(id='indicator-graphic'),
     html.Div([
         html.Label("Select hover data:"),
@@ -94,14 +111,19 @@ app.layout = html.Div([
     Input('xaxis-column', 'value'),
     Input('yaxis-column', 'value'),
     Input('hover-dropdown', 'value'),
-    Input('dark-mode-store', 'data')
+    Input('dark-mode-store', 'data'),
+    Input('Temp-slider', 'value'),
+    Input('Pressure-slider','value')
 )
-def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode):
+def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, selected_temp, selected_pres):
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
-
+    
+    filtered_df = df[df['Conditions T'] <= selected_temp]
+    new_df = filtered_df[filtered_df['Conditions P'] <=selected_pres]
+    
     fig = px.scatter(
-        df,
+        new_df,
         x=xaxis_column_name,
         y=yaxis_column_name,
         color=df.columns[1],
