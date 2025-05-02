@@ -101,7 +101,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         hover_name=df.columns[0],
         title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
         hover_data=selected_hover_data,
-        template='plotly_white'
+        template = 'seaborn'
     )
 
     if is_dark_mode:
@@ -117,21 +117,6 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
             yaxis=dict(
                 gridcolor="#444",
                 color="white"
-            ),
-        )
-    else:
-        fig.update_layout(
-            paper_bgcolor="white",
-            plot_bgcolor="white",
-            font_color="black",
-            title_font_color="black",
-            xaxis=dict(
-                gridcolor="#ccc",
-                color="black"
-            ),
-            yaxis=dict(
-                gridcolor="#ccc",
-                color="black"
             ),
         )
 
