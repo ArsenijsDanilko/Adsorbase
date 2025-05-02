@@ -191,9 +191,8 @@ def update_dropdown_styles(is_dark_mode):
     return (dropdown_dark_style if is_dark_mode else dropdown_light_style,
             dropdown_dark_style if is_dark_mode else dropdown_light_style)
 
+
 # Callback to update styles
-
-
 @app.callback(
     Output('main-div', 'style'),
     Output('title', 'style'),
