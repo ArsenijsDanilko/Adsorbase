@@ -74,6 +74,22 @@ app.layout = html.Div([
             ),
         ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
+    html.Div([
+        html.Label("Select the right temperature conditions"),
+        dcc.RangeSlider(
+            df['Conditions T'].min(),
+            df['Conditions T'].max(),
+            step=None,
+            id='Temp-slider'
+        ),
+        html.Label("Select the right pressure conditions"),
+        dcc.RangeSlider(
+            df['Conditions P'].min(),
+            df['Conditions P'].max(),
+            step = None,
+            id='Pressure-slider'
+        )
+    ]),
     dcc.Graph(id='indicator-graphic'),
     html.Div([
         html.Label('Select hover data:'),
@@ -109,14 +125,22 @@ data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
     Input('xaxis-column', 'value'),
     Input('yaxis-column', 'value'),
     Input('hover-dropdown', 'value'),
-    Input('dark-mode-store', 'data')
+    Input('dark-mode-store', 'data'),
+    Input('Temp-slider', 'value'),
+    Input('Pressure-slider','value')
 )
-def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode):
+def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range):
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
-
+    
+    filtered_df = df
+    if (t_range is not None) and (p_range is not None):
+        filtered_df = df[(t_range[0] <= df['Conditions T']) & (df['Conditions T'] <= t_range[1])]
+        filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (filtered_df['Conditions P'] <= p_range[1])]
+    
+    
     fig = px.scatter(
-        df,
+        filtered_df,
         x=xaxis_column_name,
         y=yaxis_column_name,
         color=df.columns[1],
