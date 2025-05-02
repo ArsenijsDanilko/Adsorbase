@@ -1,7 +1,24 @@
 Name,Type of Adsorbent,BET Surface Area,Pore volume,Adsorption capacity,Conditions T,Conditions P
 Zeolite 13X-K,Zeolite,591,0.25,6.9,298,20
 Zeolite 13X,Zeolite,369,0.92,3.3,303,1
+NZL-500,Zeolite,670,0.45,5.56,298,1
+Ni(II)/SSZ-13,Zeolite,836,0.44,3.12,298,1
 ZM-BF,Zeolite,611,0.34,5.58,298,1
+0.05CaNaX-250,Zeolite,869,0.37,4.54,298,0.5
+Na-LTA-3,Zeolite,871,0.37,4.04,298,0.15
+H-RHO-SA,Zeolite,803,0.34,4.6,298,1
+Li(0.61)Na(0.39)X,Zeolite,624,0.35,5.71,298,0.95
+ZSM-5-PEI,Zeolite,6.1,0.03,1.96,393,1
+ZSM-5-TEPA,Impregnated-Zeolite,19.1,0.05,1.80,373,1
+IBA-Z4A,Zeolite,32,0.13,2.56,298,1
+13X-PEI,Zeolite,1.3,0.003,1.22,348,1
+TMPTA-ZSM-5/KIT-6-TEPA,Impregnated-Zeolite,5.8,0.02,6.28,348,0.15
+PDY-7,Zeolite,773,0.39,5.40, 298,1
+Z2CH_3D,Zeolite,695,0.41,5.08,303,1
+ZY-CS,Zeolite,22.5,0.07,1.7,298,4.7
+MgO@Y,Zeolite,399,0.27,2.78,303,5
+NiO@Y,Zeolite,697,0.36,2.92,303,0.5
+NaX@NaA,Zeolite,857,0.33,5.60,298,1
 SBA-10-AAPTES,AmineBased,269,0.36,1.21,303,1
 silicasphere APTES,AmineBased,292,0.94,1.67,298,1
 TIFSIX-Cu-TPA,MOF,1380,0.58,4.71,298,1
