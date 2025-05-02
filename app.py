@@ -53,7 +53,7 @@ app.layout = html.Div([
         id='subtitle',
         style={'textAlign': 'center'}
     ),
-    html.Button('Activate Dark mode', id='toggle-darkmode', n_clicks=0),
+    html.Button('Activate Dark mode', id='toggle-darkmode'),
 
     html.Div([
         html.Div([
@@ -89,6 +89,7 @@ app.layout = html.Div([
 
 
 # Callback to update graph
+data_index = ('Name','Type of Adsorbent','BET Surface Area','Pore volume','Adsorption capacity','Conditions T','Conditions P')
 @app.callback(
     Output('indicator-graphic', 'figure'),
     Input('xaxis-column', 'value'),
@@ -107,7 +108,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         color=df.columns[1],
         hover_name=df.columns[0],
         title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
-        custom_data=['Name', 'Type of Adsorbent'],
+        custom_data=['Name','Type of Adsorbent','BET Surface Area','Pore volume','Adsorption capacity','Conditions T','Conditions P'],
         template='seaborn'
     )
 
@@ -120,6 +121,13 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         )
     )
 
+    additional_hover = ""
+    if selected_hover_data : 
+        for data_name in selected_hover_data : 
+            index = data_index.index(data_name)
+            additional_hover += f"{units[data_name]}" + f" : %{{customdata[{index}]:.2f}} <br>" 
+
+
     # Format of the hover cells
     fig.update_traces(
 
@@ -127,6 +135,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         "<i>%{customdata[1]}</i><br><br>" +
         f"{units[xaxis_column_name]}" + " : %{x:.2f} <br>" +
         f"{units[yaxis_column_name]}" + " : %{y:.2f} <br>" +
+        additional_hover +
         "<extra></extra>",
 
         mode='markers',
