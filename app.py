@@ -10,6 +10,13 @@ csv_file = cwd / "adsorbents.csv"
 df = pd.read_csv(csv_file, sep=",")
 data_options = list(df.head(1))
 
+# Unit Dicts
+units = {"BET Surface Area": "BET Surface Area [m<sup>2</sup>/g]",
+         "Pore volume": "Pore volume [cm<sup>3</sup>/g]",
+         "Adsorption capacity": "Adsorption capacity [mmol/g]",
+         "Conditions T": "Conditions T [K]",
+         "Conditions P": "Conditions P [bar]"}
+
 # Default styles
 light_style = {
     'backgroundColor': 'white',
@@ -100,8 +107,32 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         color=df.columns[1],
         hover_name=df.columns[0],
         title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
-        hover_data=selected_hover_data,
-        template = 'seaborn'
+        custom_data=['Name', 'Type of Adsorbent'],
+        template='seaborn'
+    )
+
+    # Style of the hover cells
+    fig.update_layout(
+
+        hoverlabel=dict(
+            font_size=16,
+            font_family="Arial"
+        )
+    )
+
+    # Format of the hover cells
+    fig.update_traces(
+
+        hovertemplate="<b>%{customdata[0]} </b><br>" +
+        "<i>%{customdata[1]}</i><br><br>" +
+        f"{units[xaxis_column_name]}" + " : %{x:.2f} <br>" +
+        f"{units[yaxis_column_name]}" + " : %{y:.2f} <br>" +
+        "<extra></extra>",
+
+        mode='markers',
+
+        marker={'sizemode': 'area',
+                'sizeref': 10},
     )
 
     if is_dark_mode:
