@@ -4,7 +4,6 @@ from pathlib import Path
 from dash.exceptions import PreventUpdate
 import pandas as pd
 
-
 cwd = Path.cwd()
 csv_file = cwd / 'adsorbents.csv'
 df = pd.read_csv(csv_file, sep=',')
@@ -20,12 +19,14 @@ units = {'BET Surface Area': 'BET Surface Area [m<sup>2</sup>/g]',
 # Default styles
 light_style = {
     'backgroundColor': 'white',
-    'color': 'black'
+    'color': 'black',
+    'transition': 'background-color 1.3s ease, color 1.3s ease'
 }
 
 dark_style = {
-    'backgroundColor': '#1e1e1e',
-    'color': 'white'
+    'backgroundColor': '#2a2a2a',
+    'color': 'white',
+    'transition': 'background-color 1.3s ease, color 1.3s ease'
 }
 
 dropdown_light_style = {
@@ -39,6 +40,51 @@ dropdown_dark_style = {
 }
 
 app = Dash(__name__)
+
+app.index_string = '''
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>Adsorbase</title>
+        {%favicon%}
+        {%css%}
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+        <style>
+    .glow-title {
+        color: #bf3b32;
+        text-shadow: 6px 6px 8px rgba(0, 255, 255, 0.2);
+        transition: text-shadow 0.3s ease-in-out;
+    }
+    @keyframes pulseGlow {
+        0% {
+            text-shadow: 0 0 3px #0ff, 0 0 5px #0ff, 0 0 8px #bf3b32;
+        }
+        50% {
+            text-shadow: 0 0 6px #0ff, 0 0 10px #0ff, 0 0 20px #bf3b32;
+        }
+        100% {
+            text-shadow: 0 0 3px #0ff, 0 0 5px #0ff, 0 0 8px #bf3b32;
+        }
+    }
+
+    .glow-title:hover {
+        animation: pulseGlow 1.5s infinite;
+        cursor: pointer;
+    }
+</style>
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+'''
+
 app.layout = html.Div([
     # Store to keep dark mode state
     dcc.Store(id='dark-mode-store', data=False),
@@ -46,13 +92,26 @@ app.layout = html.Div([
     html.H1(
         children='Adsorbase',
         id='title',
-        style={'textAlign': 'center'}
-    ),
+        className='glow-title',
+        style={
+            'textAlign': 'center',
+            'fontSize': '4em',
+            'color': '#bf3b32',
+            'fontFamily': "'Orbitron', sans-serif",
+            'textShadow': '6px 6px 10px rgba(0,255,255,0.2)',
+            'letterSpacing': '3px',
+            'marginTop': '5px'
+        }),
     html.H3(
         children='Your reliable adsorbent database',
         id='subtitle',
-        style={'textAlign': 'center'}
-    ),
+        style={
+            'textAlign': 'center',
+            'fontSize': '1.8em',
+            'fontStyle': 'italic',
+            'color': '#444',
+            'letterSpacing': '1px'
+        }),
     html.Button('Activate Dark mode', id='toggle-darkmode'),
 
     html.Div([
@@ -75,18 +134,24 @@ app.layout = html.Div([
         ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
     html.Div([
-        html.Label("Select the right temperature conditions"),
+        html.Label("Select the right temperature conditions in Kelvin"),
         dcc.RangeSlider(
             df['Conditions T'].min(),
             df['Conditions T'].max(),
             step=None,
+            updatemode='drag',
+            tooltip={"placement": "bottom", "always_visible": True},
+            allowCross=False,
             id='Temp-slider'
         ),
-        html.Label("Select the right pressure conditions"),
+        html.Label("Select the right pressure conditions in bar"),
         dcc.RangeSlider(
             df['Conditions P'].min(),
             df['Conditions P'].max(),
-            step = None,
+            step=None,
+            updatemode='drag',
+            tooltip={"placement": "bottom", "always_visible": True},
+            allowCross=False,
             id='Pressure-slider'
         )
     ]),
@@ -127,7 +192,7 @@ data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
     Input('hover-dropdown', 'value'),
     Input('dark-mode-store', 'data'),
     Input('Temp-slider', 'value'),
-    Input('Pressure-slider','value')
+    Input('Pressure-slider', 'value')
 )
 def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range):
     if not xaxis_column_name or not yaxis_column_name:
@@ -137,7 +202,6 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     if (t_range is not None) and (p_range is not None):
         filtered_df = df[(t_range[0] <= df['Conditions T']) & (df['Conditions T'] <= t_range[1])]
         filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (filtered_df['Conditions P'] <= p_range[1])]
-    
     
     fig = px.scatter(
         filtered_df,
@@ -155,7 +219,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     fig.update_layout(
         hoverlabel=dict(
             font_size=16,
-            font_family='Arial'
+            font_family='Arial' 
         )
     )
 
@@ -183,6 +247,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
 
     if is_dark_mode:
         fig.update_layout(
+            transition_duration=1000,
             paper_bgcolor='#2a2a2a',    # Graph area background
             plot_bgcolor='#2a2a2a',     # Plot area background
             font_color='white',         # Text color
@@ -222,6 +287,12 @@ def update_dropdown_styles(is_dark_mode):
     return (dropdown_dark_style if is_dark_mode else dropdown_light_style,
             dropdown_dark_style if is_dark_mode else dropdown_light_style)
 
+@app.callback(
+    Output('toggle-darkmode', 'children'),
+    Input('dark-mode-store', 'data')
+)
+def update_toggle_label(is_dark_mode):
+    return 'Activate Light Mode' if is_dark_mode else 'Activate Dark Mode'
 
 # Callback to update styles
 @app.callback(
@@ -232,9 +303,28 @@ def update_dropdown_styles(is_dark_mode):
 )
 def update_styles(is_dark_mode):
     style = dark_style if is_dark_mode else light_style
-    center_text = {'textAlign': 'center'}
-    return style, {**style, **center_text}, {**style, **center_text}
+    # Title remains styled regardless of theme
+    title_style = {
+        'textAlign': 'center',
+        'fontFamily': "'Orbitron', sans-serif",
+        'fontSize': '4em',
+        'color': '#bf3b32',
+        'letterSpacing': '3px',
+        'marginTop': '5px'
+        # No textShadow here
+    }
+    subtitle_style = {
+        'textAlign': 'center',
+        'fontSize': '1.8em',
+        'fontStyle': 'italic',
+        'color': 'white' if is_dark_mode else '#444',
+        'letterSpacing': '1px'
+    }
+    return style, title_style, subtitle_style
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+   
+
