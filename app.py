@@ -32,7 +32,8 @@ dropdown_dark_style = {
 }
 
 app.layout = html.Div([
-    dcc.Store(id='dark-mode-store', data=False),  # Store to keep dark mode state
+    # Store to keep dark mode state
+    dcc.Store(id='dark-mode-store', data=False),
 
     html.H1(
         children='Adsorbase',
@@ -61,7 +62,7 @@ app.layout = html.Div([
                 df.columns[2:5].unique(),
                 'BET Surface Area',
                 id='yaxis-column',
-                style= dropdown_light_style
+                style=dropdown_light_style
             ),
         ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
@@ -90,7 +91,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, is_dark_mode):
         hover_data=["Conditions T", "Conditions P"],
         template='plotly_white'
     )
-    
+
     if is_dark_mode:
         fig.update_layout(
             paper_bgcolor="#2a2a2a",    # Graph area background
@@ -137,6 +138,7 @@ def toggle_dark_mode(n_clicks, current_state):
         raise PreventUpdate
     return not current_state  # Toggle boolean
 
+
 @callback(
     Output('xaxis-column', 'style'),
     Output('yaxis-column', 'style'),
@@ -147,6 +149,8 @@ def update_dropdown_styles(is_dark_mode):
             dropdown_dark_style if is_dark_mode else dropdown_light_style)
 
 # Callback to update styles
+
+
 @callback(
     Output('main-div', 'style'),
     Output('title', 'style'),
