@@ -1,14 +1,14 @@
-from dash import Dash, dcc, html, Input, Output, State, callback, ctx
+from dash import Dash, dcc, html, Input, Output, State
 import plotly.express as px
 from pathlib import Path
 from dash.exceptions import PreventUpdate
 import pandas as pd
 
-app = Dash()
 
 cwd = Path.cwd()
 csv_file = cwd / "adsorbents.csv"
 df = pd.read_csv(csv_file, sep=",")
+data_options = list(df.head(1))
 
 # Default styles
 light_style = {
@@ -31,6 +31,7 @@ dropdown_dark_style = {
     'color': 'black'
 }
 
+app = Dash(__name__)
 app.layout = html.Div([
     # Store to keep dark mode state
     dcc.Store(id='dark-mode-store', data=False),
@@ -67,17 +68,28 @@ app.layout = html.Div([
         ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
     dcc.Graph(id='indicator-graphic'),
+    html.Div([
+        html.Label("Select hover data:"),
+        dcc.Dropdown(
+            id="hover-dropdown",
+            options=[{"label": col, "value": col}
+                     for col in data_options],
+            value=[],
+            multi=True,
+        ),
+    ]),
 ], id='main-div', style=light_style)
 
 
 # Callback to update graph
-@callback(
+@app.callback(
     Output('indicator-graphic', 'figure'),
     Input('xaxis-column', 'value'),
     Input('yaxis-column', 'value'),
+    Input('hover-dropdown', 'value'),
     Input('dark-mode-store', 'data')
 )
-def update_graph(xaxis_column_name, yaxis_column_name, is_dark_mode):
+def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode):
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
 
@@ -88,7 +100,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, is_dark_mode):
         color=df.columns[1],
         hover_name=df.columns[0],
         title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
-        hover_data=["Conditions T", "Conditions P"],
+        hover_data=selected_hover_data,
         template='plotly_white'
     )
 
@@ -128,7 +140,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, is_dark_mode):
 
 
 # Callback to toggle dark mode
-@callback(
+@app.callback(
     Output('dark-mode-store', 'data'),
     Input('toggle-darkmode', 'n_clicks'),
     State('dark-mode-store', 'data')
@@ -139,7 +151,7 @@ def toggle_dark_mode(n_clicks, current_state):
     return not current_state  # Toggle boolean
 
 
-@callback(
+@app.callback(
     Output('xaxis-column', 'style'),
     Output('yaxis-column', 'style'),
     Input('dark-mode-store', 'data')
@@ -151,7 +163,7 @@ def update_dropdown_styles(is_dark_mode):
 # Callback to update styles
 
 
-@callback(
+@app.callback(
     Output('main-div', 'style'),
     Output('title', 'style'),
     Output('subtitle', 'style'),
