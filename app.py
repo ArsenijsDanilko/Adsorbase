@@ -375,6 +375,3 @@ def update_styles(is_dark_mode):
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-   
-
