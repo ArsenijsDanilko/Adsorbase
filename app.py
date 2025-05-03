@@ -3,6 +3,7 @@ import plotly.express as px
 from pathlib import Path
 from dash.exceptions import PreventUpdate
 import pandas as pd
+from dash import dash_table
 
 cwd = Path.cwd()
 csv_file = cwd / 'adsorbents.csv'
@@ -133,6 +134,7 @@ app.layout = html.Div([
             ),
         ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
+    
     html.Div([
         html.Label("Select the right temperature conditions in Kelvin"),
         dcc.RangeSlider(
@@ -155,7 +157,7 @@ app.layout = html.Div([
             id='Pressure-slider'
         )
     ]),
-    dcc.Graph(id='indicator-graphic'),
+
     html.Div([
         html.Label('Select hover data:'),
         dcc.Dropdown(
@@ -164,9 +166,57 @@ app.layout = html.Div([
                      for col in data_options],
             value=[],
             multi=True,
+            style={'color': 'black'}
         ),
     ]),
+
+    dcc.Graph(id='indicator-graphic'),
+
+    html.Hr(),
+    html.H3("Filtered Adsorbents Table", style={'textAlign': 'center'}),
+    dcc.Loading(
+        id="loading-table",
+        type="default",
+        children=dash_table.DataTable(
+            id='adsorbents-table',
+            columns=[{"name": col, "id": col} for col in df.columns],
+            style_table={'overflowX': 'auto'},
+            style_cell={
+                'textAlign': 'center',
+                'minWidth': '100px',
+                'maxWidth': '200px',
+                'whiteSpace': 'normal',
+            },
+            style_header={
+                'backgroundColor': 'rgb(255, 255, 255)',
+                'fontWeight': 'bold',
+                'color': 'black'
+            },
+            style_data={
+                'backgroundColor': 'rgb(255, 255, 255)',
+                'color': 'black'
+            },
+            page_size=10
+        )
+)
+
 ], id='main-div', style=light_style)
+
+@app.callback(
+    Output('adsorbents-table', 'data'),
+    Input('Temp-slider', 'value'),
+    Input('Pressure-slider', 'value')
+)
+def update_table(t_range, p_range):
+    if t_range is None or p_range is None:
+        raise PreventUpdate
+
+    filtered_df = df[
+        (df['Conditions T'] >= t_range[0]) & (df['Conditions T'] <= t_range[1]) &
+        (df['Conditions P'] >= p_range[0]) & (df['Conditions P'] <= p_range[1])
+    ]
+
+    return filtered_df.to_dict('records')
 
 
 # Callback to update hover dropdown options
