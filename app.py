@@ -86,7 +86,7 @@ app.layout = html.Div([
         dcc.RangeSlider(
             df['Conditions P'].min(),
             df['Conditions P'].max(),
-            step = None,
+            step=None,
             id='Pressure-slider'
         )
     ]),
@@ -116,9 +116,11 @@ def update_hover_dropdown(x_axis, y_axis):
 
     return [{'label': col, 'value': col} for col in hover_candidates]
 
+
 # Callback to update graph
 data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
               'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P')
+
 
 @app.callback(
     Output('indicator-graphic', 'figure'),
@@ -127,28 +129,31 @@ data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
     Input('hover-dropdown', 'value'),
     Input('dark-mode-store', 'data'),
     Input('Temp-slider', 'value'),
-    Input('Pressure-slider','value')
+    Input('Pressure-slider', 'value')
 )
 def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range):
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
-    
+
     filtered_df = df
     if (t_range is not None) and (p_range is not None):
-        filtered_df = df[(t_range[0] <= df['Conditions T']) & (df['Conditions T'] <= t_range[1])]
-        filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (filtered_df['Conditions P'] <= p_range[1])]
-    
-    
+        filtered_df = df[(t_range[0] <= df['Conditions T']) &
+                          (df['Conditions T'] <= t_range[1])]
+        filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (
+            filtered_df['Conditions P'] <= p_range[1])]
+
     fig = px.scatter(
         filtered_df,
         x=xaxis_column_name,
         y=yaxis_column_name,
-        color=df.columns[1],
-        hover_name=df.columns[0],
-        title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
-        custom_data=['Name', 'Type of Adsorbent', 'BET Surface Area',
+        labels={xaxis_column_name: units[xaxis_column_name],
+                yaxis_column_name: units[yaxis_column_name]},
+        color= df.columns[1],
+        hover_name= df.columns[0],
+        title= f'{yaxis_column_name} as a function of {xaxis_column_name}',
+        custom_data = ['Name', 'Type of Adsorbent', 'BET Surface Area',
                      'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P'],
-        template='seaborn'
+        template= 'seaborn'
     )
 
     # Style of the hover cells
@@ -163,8 +168,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     if selected_hover_data:
         for data_name in selected_hover_data:
             index = data_index.index(data_name)
-            additional_hover += f"{units[data_name]}" + \
-                f" : %{{customdata[{index}]:.2f}} <br>"
+            additional_hover += f"{units[data_name]}" + f" : %{{customdata[{index}]:.2f}} <br>"
 
     # Format of the hover cells
     fig.update_traces(
@@ -202,7 +206,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
 
 
 # Callback to toggle dark mode
-@app.callback(
+@ app.callback(
     Output('dark-mode-store', 'data'),
     Input('toggle-darkmode', 'n_clicks'),
     State('dark-mode-store', 'data')
@@ -213,7 +217,7 @@ def toggle_dark_mode(n_clicks, current_state):
     return not current_state  # Toggle boolean
 
 
-@app.callback(
+@ app.callback(
     Output('xaxis-column', 'style'),
     Output('yaxis-column', 'style'),
     Input('dark-mode-store', 'data')
@@ -224,7 +228,7 @@ def update_dropdown_styles(is_dark_mode):
 
 
 # Callback to update styles
-@app.callback(
+@ app.callback(
     Output('main-div', 'style'),
     Output('title', 'style'),
     Output('subtitle', 'style'),
