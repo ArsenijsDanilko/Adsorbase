@@ -74,15 +74,16 @@ app.layout = html.Div([
             ),
         ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
+
     html.Div([
-        html.Label("Select the right temperature conditions"),
+        html.Label("Select the right temperature conditions [K]"),
         dcc.RangeSlider(
             df['Conditions T'].min(),
             df['Conditions T'].max(),
             step=None,
             id='Temp-slider'
         ),
-        html.Label("Select the right pressure conditions"),
+        html.Label("Select the right pressure conditions [bar]"),
         dcc.RangeSlider(
             df['Conditions P'].min(),
             df['Conditions P'].max(),
@@ -91,6 +92,7 @@ app.layout = html.Div([
         )
     ]),
     dcc.Graph(id='indicator-graphic'),
+    html.Div(id="info", style={"marginBottom": "20px", "fontWeight": "bold"}),
     html.Div([
         html.Label('Select hover data:'),
         dcc.Dropdown(
@@ -103,26 +105,83 @@ app.layout = html.Div([
     ]),
 ], id='main-div', style=light_style)
 
+#Function set to count the number of element of the graph
+app.clientside_callback(
+    """
+    function(restyleData, relayoutData, figure) {
+    if (!figure || !figure.data) return "N/A";
+
+    // Set the limit of the zoom
+    let xRange = null;
+    let yRange = null;
+
+    if (relayoutData) {
+        if ('xaxis.range[0]' in relayoutData && 'xaxis.range[1]' in relayoutData) {
+            xRange = [relayoutData['xaxis.range[0]'], relayoutData['xaxis.range[1]']];
+        } else if ('xaxis.range' in relayoutData) {
+            xRange = relayoutData['xaxis.range'];
+        }
+        if ('yaxis.range[0]' in relayoutData && 'yaxis.range[1]' in relayoutData) {
+            yRange = [relayoutData['yaxis.range[0]'], relayoutData['yaxis.range[1]']];
+        } else if ('yaxis.range' in relayoutData) {
+            yRange = relayoutData['yaxis.range'];
+        }
+    }
+
+    // Redefine the actual range before counting
+    if ((!xRange || !yRange) && figure.layout) {
+        if (!xRange && figure.layout.xaxis && figure.layout.xaxis.range) {
+            xRange = figure.layout.xaxis.range;
+        }
+        if (!yRange && figure.layout.yaxis && figure.layout.yaxis.range) {
+            yRange = figure.layout.yaxis.range;
+        }
+    }
+
+    let totalElements = 0;
+
+    for (let i = 0; i < figure.data.length; i++) {
+        let trace = figure.data[i];
+        let visible = trace.visible === undefined || trace.visible === true;
+        if (!visible || !trace.x || !trace.y) continue;
+
+        for (let j = 0; j < trace.x.length; j++) {
+            let x = trace.x[j];
+            let y = trace.y[j];
+            let inX = !xRange || (x >= xRange[0] && x <= xRange[1]);
+            let inY = !yRange || (y >= yRange[0] && y <= yRange[1]);
+
+            if (inX && inY) {
+                totalElements += 1;
+            }
+        }
+    }
+
+    return "Selected points : " + totalElements;
+    }   
+    """,
+    Output("info", "children"),
+    [Input("indicator-graphic", "restyleData"), Input("indicator-graphic", "relayoutData"), Input("indicator-graphic", "figure"),
+    Input("Temp-slider", "value"), Input("Pressure-slider", "value")]
+)
 
 # Callback to update hover dropdown options
-@app.callback(
+@ app.callback(
     Output('hover-dropdown', 'options'),
     Input('xaxis-column', 'value'),
     Input('yaxis-column', 'value')
 )
 def update_hover_dropdown(x_axis, y_axis):
-    hover_candidates = [
+    hover_candidates= [
         col for col in data_options if col not in (x_axis, y_axis)]
 
     return [{'label': col, 'value': col} for col in hover_candidates]
 
-
-# Callback to update graph
-data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
+data_index= ('Name', 'Type of Adsorbent', 'BET Surface Area',
               'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P')
 
-
-@app.callback(
+# Callback to update graph
+@ app.callback(
     Output('indicator-graphic', 'figure'),
     Input('xaxis-column', 'value'),
     Input('yaxis-column', 'value'),
@@ -135,25 +194,26 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
 
-    filtered_df = df
+    filtered_df= df
     if (t_range is not None) and (p_range is not None):
-        filtered_df = df[(t_range[0] <= df['Conditions T']) &
-                          (df['Conditions T'] <= t_range[1])]
-        filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (
+        filtered_df= df[(t_range[0] <= df['Conditions T']) &
+                         (df['Conditions T'] <= t_range[1])]
+        filtered_df= filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (
             filtered_df['Conditions P'] <= p_range[1])]
 
-    fig = px.scatter(
+    fig= px.scatter(
         filtered_df,
         x=xaxis_column_name,
         y=yaxis_column_name,
         labels={xaxis_column_name: units[xaxis_column_name],
                 yaxis_column_name: units[yaxis_column_name]},
-        color= df.columns[1],
-        hover_name= df.columns[0],
-        title= f'{yaxis_column_name} as a function of {xaxis_column_name}',
-        custom_data = ['Name', 'Type of Adsorbent', 'BET Surface Area',
+        color=df.columns[1],
+        symbol="Type of Adsorbent",
+        hover_name=df.columns[0],
+        title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
+        custom_data=['Name', 'Type of Adsorbent', 'BET Surface Area',
                      'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P'],
-        template= 'seaborn'
+        template='seaborn'
     )
 
     # Style of the hover cells
@@ -164,10 +224,10 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         )
     )
 
-    additional_hover = ""
+    additional_hover= ""
     if selected_hover_data:
         for data_name in selected_hover_data:
-            index = data_index.index(data_name)
+            index= data_index.index(data_name)
             additional_hover += f"{units[data_name]}" + f" : %{{customdata[{index}]:.2f}} <br>"
 
     # Format of the hover cells
@@ -182,7 +242,8 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         mode='markers',
 
         marker={'sizemode': 'area',
-                'sizeref': 10},
+                'sizeref': 10,
+                'size': 8},
     )
 
     if is_dark_mode:
@@ -235,8 +296,8 @@ def update_dropdown_styles(is_dark_mode):
     Input('dark-mode-store', 'data')
 )
 def update_styles(is_dark_mode):
-    style = dark_style if is_dark_mode else light_style
-    center_text = {'textAlign': 'center'}
+    style= dark_style if is_dark_mode else light_style
+    center_text= {'textAlign': 'center'}
     return style, {**style, **center_text}, {**style, **center_text}
 
 
