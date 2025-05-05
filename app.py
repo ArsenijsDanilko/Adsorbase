@@ -1,3 +1,4 @@
+#Necessary imports 
 from dash import Dash, dcc, html, Input, Output, State
 import plotly.express as px
 from pathlib import Path
@@ -5,6 +6,7 @@ from dash.exceptions import PreventUpdate
 import pandas as pd
 from dash import dash_table
 
+#Importing the csv file
 cwd = Path.cwd()
 csv_file = cwd / 'adsorbents.csv'
 df = pd.read_csv(csv_file, sep=',')
@@ -40,9 +42,10 @@ dropdown_dark_style = {
     'color': 'black'
 }
 
+#Initializing the app
 app = Dash(__name__)
 
-
+#Appearance of the app
 app.layout = html.Div([
     # Store to keep dark mode state
     dcc.Store(id='dark-mode-store', data=False),
@@ -158,23 +161,6 @@ app.layout = html.Div([
 
 ], id='main-div', style=light_style)
 
-@app.callback(
-    Output('adsorbents-table', 'data'),
-    Input('Temp-slider', 'value'),
-    Input('Pressure-slider', 'value')
-)
-def update_table(t_range, p_range):
-    if t_range is None or p_range is None:
-        raise PreventUpdate
-
-    filtered_df = df[
-        (df['Conditions T'] >= t_range[0]) & (df['Conditions T'] <= t_range[1]) &
-        (df['Conditions P'] >= p_range[0]) & (df['Conditions P'] <= p_range[1])
-    ]
-
-    return filtered_df.to_dict('records')
-
-
 # Callback to update hover dropdown options
 @app.callback(
     Output('hover-dropdown', 'options'),
@@ -203,12 +189,22 @@ data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
 def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range):
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
-    
-    filtered_df = df
-    if (t_range is not None) and (p_range is not None):
-        filtered_df = df[(t_range[0] <= df['Conditions T']) & (df['Conditions T'] <= t_range[1])]
-        filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (filtered_df['Conditions P'] <= p_range[1])]
-    
+
+    #ensuring that one filter is enough to modify the graph
+    filtered_df = df.copy()
+
+    if t_range is not None:
+        filtered_df = filtered_df[
+            (filtered_df['Conditions T'] >= t_range[0]) &
+            (filtered_df['Conditions T'] <= t_range[1])
+        ]
+
+    if p_range is not None:
+        filtered_df = filtered_df[
+            (filtered_df['Conditions P'] >= p_range[0]) &
+            (filtered_df['Conditions P'] <= p_range[1])
+        ]
+    #figure
     fig = px.scatter(
         filtered_df,
         x=xaxis_column_name,
@@ -221,51 +217,34 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         template='seaborn'
     )
 
-    # Style of the hover cells
     fig.update_layout(
-        hoverlabel=dict(
-            font_size=16,
-            font_family='Arial' 
-        )
+        hoverlabel=dict(font_size=16, font_family='Arial')
     )
 
     additional_hover = ""
     if selected_hover_data:
         for data_name in selected_hover_data:
             index = data_index.index(data_name)
-            additional_hover += f"{units[data_name]}" + \
-                f" : %{{customdata[{index}]:.2f}} <br>"
+            additional_hover += f"{units[data_name]} : %{{customdata[{index}]:.2f}} <br>"
 
-    # Format of the hover cells
     fig.update_traces(
-        hovertemplate="<b>%{customdata[0]} </b><br>" +
+        hovertemplate = ("<b>%{customdata[0]}</b><br>" + 
         "<i>%{customdata[1]}</i><br><br>" +
-        f"{units[xaxis_column_name]}" + " : %{x:.2f} <br>" +
-        f"{units[yaxis_column_name]}" + " : %{y:.2f} <br>" +
-        additional_hover +
-        "<extra></extra>",
-
-        mode='markers',
-
-        marker={'sizemode': 'area',
-                'sizeref': 10},
+        f"{units[xaxis_column_name]} : " + "%{x:.2f} <br>" +
+        f"{units[yaxis_column_name]} : " + "%{y:.2f} <br>" +
+        additional_hover + "<extra></extra>"
+        )
     )
 
     if is_dark_mode:
         fig.update_layout(
             transition_duration=1000,
-            paper_bgcolor='#2a2a2a',    # Graph area background
-            plot_bgcolor='#2a2a2a',     # Plot area background
-            font_color='white',         # Text color
+            paper_bgcolor='#2a2a2a',
+            plot_bgcolor='#2a2a2a',
+            font_color='white',
             title_font_color='white',
-            xaxis=dict(
-                gridcolor='#444',       # Grid line color
-                color='white'           # Axis label color
-            ),
-            yaxis=dict(
-                gridcolor='#444',
-                color='white'
-            ),
+            xaxis=dict(gridcolor='#444', color='white'),
+            yaxis=dict(gridcolor='#444', color='white')
         )
 
     fig.update_layout(transition_duration=500)
@@ -316,7 +295,6 @@ def update_styles(is_dark_mode):
         'color': 'white' if is_dark_mode else 'black',
         'letterSpacing': '3px',
         'marginTop': '5px'
-        # No textShadow here
     }
     subtitle_style = {
         'textAlign': 'center',
@@ -327,6 +305,22 @@ def update_styles(is_dark_mode):
     }
     return style, title_style, subtitle_style
 
+#Callback to connect the table to the filters 
+@app.callback(
+    Output('adsorbents-table', 'data'),
+    Input('Temp-slider', 'value'),
+    Input('Pressure-slider', 'value')
+)
+def update_table(t_range, p_range):
+    if t_range is None or p_range is None:
+        raise PreventUpdate
+
+    filtered_df = df[
+        (df['Conditions T'] >= t_range[0]) & (df['Conditions T'] <= t_range[1]) &
+        (df['Conditions P'] >= p_range[0]) & (df['Conditions P'] <= p_range[1])
+    ]
+
+    return filtered_df.to_dict('records')
 
 if __name__ == '__main__':
     app.run(debug=True)
