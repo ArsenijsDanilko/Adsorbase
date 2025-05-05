@@ -3,7 +3,8 @@ import plotly.express as px
 from pathlib import Path
 from dash.exceptions import PreventUpdate
 import pandas as pd
-import math 
+import math
+import os
 
 
 cwd = Path.cwd()
@@ -104,9 +105,22 @@ app.layout = html.Div([
             multi=True,
         ),
     ]),
+    html.H3("Adding adsorbent"),
+    html.P("Please write the name and the type of adsorbent in letter, and the rest in number with a point for the decimal."),
+    dcc.Input(id='input-name', type='text', placeholder='Name'),
+    dcc.Input(id='input-type', type='text', placeholder='Type of adsorbent'),
+    dcc.Input(id='input-BET', type='number', placeholder='BET Surface Area'),
+    dcc.Input(id='input-Pore', type='number', placeholder='Pore volume'),
+    dcc.Input(id='input-Ads', type='number',
+              placeholder='Adsorption capacity'),
+    dcc.Input(id='input-T', type='number', placeholder='Conditions T'),
+    dcc.Input(id='input-P', type='number', placeholder='Conditions P'),
+    html.Button('Add', id='submit-btn', n_clicks=0, style={'marginLeft': '10px'}),
+    html.Div(id='output', style={'color': 'green'})
+
 ], id='main-div', style=light_style)
 
-#Function set to count the number of element of the graph
+# Function set to count the number of element on the graph
 app.clientside_callback(
     """
     function(restyleData, relayoutData, figure) {
@@ -163,26 +177,29 @@ app.clientside_callback(
     """,
     Output("info", "children"),
     [Input("indicator-graphic", "restyleData"), Input("indicator-graphic", "relayoutData"), Input("indicator-graphic", "figure"),
-    Input("Temp-slider", "value"), Input("Pressure-slider", "value")]
+     Input("Temp-slider", "value"), Input("Pressure-slider", "value")]
 )
 
 # Callback to update hover dropdown options
-@ app.callback(
+
+
+@app.callback(
     Output('hover-dropdown', 'options'),
     Input('xaxis-column', 'value'),
     Input('yaxis-column', 'value')
 )
 def update_hover_dropdown(x_axis, y_axis):
-    hover_candidates= [
+    hover_candidates = [
         col for col in data_options if col not in (x_axis, y_axis)]
 
     return [{'label': col, 'value': col} for col in hover_candidates]
 
-data_index= ('Name', 'Type of Adsorbent', 'BET Surface Area',
+
+data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
               'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P')
 
 # Callback to update graph
-@ app.callback(
+@app.callback(
     Output('indicator-graphic', 'figure'),
     Input('xaxis-column', 'value'),
     Input('yaxis-column', 'value'),
@@ -195,14 +212,14 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
 
-    filtered_df= df
+    filtered_df = df
     if (t_range is not None) and (p_range is not None):
-        filtered_df= df[(t_range[0] <= df['Conditions T']) &
+        filtered_df = df[(t_range[0] <= df['Conditions T']) &
                          (df['Conditions T'] <= t_range[1])]
-        filtered_df= filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (
+        filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (
             filtered_df['Conditions P'] <= p_range[1])]
 
-    fig= px.scatter(
+    fig = px.scatter(
         filtered_df,
         x=xaxis_column_name,
         y=yaxis_column_name,
@@ -223,15 +240,16 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
             font_size=16,
             font_family='Arial'
         ),
-        xaxis_autorange=True, 
+        xaxis_autorange=True,  # to rerange the axis after changing the sliders
         yaxis_autorange=True
     )
 
-    additional_hover= ""
+    additional_hover = ""
     if selected_hover_data:
         for data_name in selected_hover_data:
-            index= data_index.index(data_name)
-            additional_hover += f"{units[data_name]}" + f" : %{{customdata[{index}]:.2f}} <br>"
+            index = data_index.index(data_name)
+            additional_hover += f"{units[data_name]}" + \
+                f" : %{{customdata[{index}]:.2f}} <br>"
 
     # Format of the hover cells
     fig.update_traces(
@@ -270,7 +288,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
 
 
 # Callback to toggle dark mode
-@ app.callback(
+@app.callback(
     Output('dark-mode-store', 'data'),
     Input('toggle-darkmode', 'n_clicks'),
     State('dark-mode-store', 'data')
@@ -281,7 +299,7 @@ def toggle_dark_mode(n_clicks, current_state):
     return not current_state  # Toggle boolean
 
 
-@ app.callback(
+@app.callback(
     Output('xaxis-column', 'style'),
     Output('yaxis-column', 'style'),
     Input('dark-mode-store', 'data')
@@ -292,16 +310,48 @@ def update_dropdown_styles(is_dark_mode):
 
 
 # Callback to update styles
-@ app.callback(
+@app.callback(
     Output('main-div', 'style'),
     Output('title', 'style'),
     Output('subtitle', 'style'),
     Input('dark-mode-store', 'data')
 )
 def update_styles(is_dark_mode):
-    style= dark_style if is_dark_mode else light_style
-    center_text= {'textAlign': 'center'}
+    style = dark_style if is_dark_mode else light_style
+    center_text = {'textAlign': 'center'}
     return style, {**style, **center_text}, {**style, **center_text}
+
+
+@app.callback(
+    Output('output', 'children'),
+    Input('submit-btn', 'n_clicks'),
+    State('input-name', 'value'),
+    State('input-type', 'value'),
+    State('input-BET', 'value'),
+    State('input-Pore', 'value'),
+    State('input-Ads', 'value'),
+    State('input-T', 'value'),
+    State('input-P', 'value'),
+)
+def insert_into_csv(n_click, name, type, BET, Pore, Ads, T, P):
+    if n_click > 0 :
+        new_data = pd.DataFrame([[name, type, BET, Pore, Ads, T, P]], columns=['Name', 'Type of Adsorbent', 'BET Surface Area',
+                                                                           'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P'])
+        if os.path.exists(csv_file):
+            existing = pd.read_csv(csv_file)
+            updated = pd.concat([existing, new_data], ignore_index=True)
+        else:
+            updated = new_data
+        updated.to_csv(csv_file, index=False)
+
+
+def update_output(n_clicks, name, type, BET, Pore, Ads, T, P):
+    if n_clicks > 0:
+        if not (name or type or BET or Pore or Ads or T or P) is None:
+            return html.Span("Error : Please complete each data.", style={'color': 'red'})
+        else : 
+            insert_into_csv(name, type, BET, Pore, Ads, T, P),
+            return f"Added : {name}, {type}, {BET}, {Pore}, {Ads}, {T}, {P}"
 
 
 if __name__ == '__main__':
