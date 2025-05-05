@@ -3,6 +3,7 @@ import plotly.express as px
 from pathlib import Path
 from dash.exceptions import PreventUpdate
 import pandas as pd
+import math 
 
 
 cwd = Path.cwd()
@@ -78,15 +79,15 @@ app.layout = html.Div([
     html.Div([
         html.Label("Select the right temperature conditions [K]"),
         dcc.RangeSlider(
-            df['Conditions T'].min(),
-            df['Conditions T'].max(),
+            math.floor(df['Conditions T'].min()/10)*10,
+            math.ceil(df['Conditions T'].max()/10)*10,
             step=None,
             id='Temp-slider'
         ),
         html.Label("Select the right pressure conditions [bar]"),
         dcc.RangeSlider(
-            df['Conditions P'].min(),
-            df['Conditions P'].max(),
+            math.floor(df['Conditions P'].min()),
+            math.ceil(df['Conditions P'].max()),
             step=None,
             id='Pressure-slider'
         )
@@ -221,7 +222,9 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         hoverlabel=dict(
             font_size=16,
             font_family='Arial'
-        )
+        ),
+        xaxis_autorange=True, 
+        yaxis_autorange=True
     )
 
     additional_hover= ""
