@@ -42,49 +42,6 @@ dropdown_dark_style = {
 
 app = Dash(__name__)
 
-app.index_string = '''
-<!DOCTYPE html>
-<html>
-    <head>
-        {%metas%}
-        <title>Adsorbase</title>
-        {%favicon%}
-        {%css%}
-        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
-        <style>
-    .glow-title {
-        color: #bf3b32;
-        text-shadow: 6px 6px 8px rgba(0, 255, 255, 0.2);
-        transition: text-shadow 0.3s ease-in-out;
-    }
-    @keyframes pulseGlow {
-        0% {
-            text-shadow: 0 0 3px #0ff, 0 0 5px #0ff, 0 0 8px #bf3b32;
-        }
-        50% {
-            text-shadow: 0 0 6px #0ff, 0 0 10px #0ff, 0 0 20px #bf3b32;
-        }
-        100% {
-            text-shadow: 0 0 3px #0ff, 0 0 5px #0ff, 0 0 8px #bf3b32;
-        }
-    }
-
-    .glow-title:hover {
-        animation: pulseGlow 1.5s infinite;
-        cursor: pointer;
-    }
-</style>
-    </head>
-    <body>
-        {%app_entry%}
-        <footer>
-            {%config%}
-            {%scripts%}
-            {%renderer%}
-        </footer>
-    </body>
-</html>
-'''
 
 app.layout = html.Div([
     # Store to keep dark mode state
@@ -93,16 +50,14 @@ app.layout = html.Div([
     html.H1(
         children='Adsorbase',
         id='title',
-        className='glow-title',
         style={
             'textAlign': 'center',
             'fontSize': '4em',
-            'color': '#bf3b32',
-            'fontFamily': "'Orbitron', sans-serif",
-            'textShadow': '6px 6px 10px rgba(0,255,255,0.2)',
+            'color': 'black',
             'letterSpacing': '3px',
             'marginTop': '5px'
         }),
+
     html.H3(
         children='Your reliable adsorbent database',
         id='subtitle',
@@ -113,6 +68,7 @@ app.layout = html.Div([
             'color': '#444',
             'letterSpacing': '1px'
         }),
+
     html.Button('Activate Dark mode', id='toggle-darkmode'),
 
     html.Div([
@@ -356,9 +312,8 @@ def update_styles(is_dark_mode):
     # Title remains styled regardless of theme
     title_style = {
         'textAlign': 'center',
-        'fontFamily': "'Orbitron', sans-serif",
         'fontSize': '4em',
-        'color': '#bf3b32',
+        'color': 'white' if is_dark_mode else 'black',
         'letterSpacing': '3px',
         'marginTop': '5px'
         # No textShadow here
