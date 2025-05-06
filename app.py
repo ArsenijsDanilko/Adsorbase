@@ -114,9 +114,7 @@ app.layout = html.Div([
             id='Pressure-slider'
         )
     ]),
-  
-    dcc.Graph(id='indicator-graphic'),
-    html.Div(id="selected-number", style={"marginBottom": "20px", "fontWeight": "bold"}),
+
     html.Div([
         html.Label('Select hover data:'),
         dcc.Dropdown(
@@ -128,6 +126,9 @@ app.layout = html.Div([
             style={'color': 'black'}
         ),
     ]),
+  
+    dcc.Graph(id='indicator-graphic'),
+    html.Div(id="selected-number", style={"marginBottom": "20px", "fontWeight": "bold"}),
     
     html.H3("Adding adsorbent"),
     html.P("Please write the name and the type of adsorbent in letter, and the rest in number with a point for the decimal."),
