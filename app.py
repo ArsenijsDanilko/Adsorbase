@@ -10,6 +10,7 @@ import os
 cwd = Path.cwd()
 csv_file = cwd / 'adsorbents.csv'
 df = pd.read_csv(csv_file, sep=',')
+custom_path = cwd/ 'custom.csv'
 data_options = list(df.head(1))[2:]
 
 # Unit Dicts
@@ -115,7 +116,8 @@ app.layout = html.Div([
               placeholder='Adsorption capacity'),
     dcc.Input(id='input-T', type='number', placeholder='Conditions T'),
     dcc.Input(id='input-P', type='number', placeholder='Conditions P'),
-    html.Button('Add', id='submit-btn', n_clicks=0, style={'marginLeft': '10px'}),
+    html.Button('Add', id='submit-btn', n_clicks=0,
+                style={'marginLeft': '10px'}),
     html.Div(id='output', style={'color': 'green'})
 
 ], id='main-div', style=light_style)
@@ -199,6 +201,8 @@ data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
               'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P')
 
 # Callback to update graph
+
+
 @app.callback(
     Output('indicator-graphic', 'figure'),
     Input('xaxis-column', 'value'),
@@ -322,6 +326,20 @@ def update_styles(is_dark_mode):
     return style, {**style, **center_text}, {**style, **center_text}
 
 
+def insert_into_csv(name, type, BET, Pore, Ads, T, P):
+    new_data = pd.DataFrame(
+        [[name, type, BET, Pore, Ads, T, P]],
+        columns=list(df.head(1))
+    )
+
+    if os.path.exists(custom_path):
+        existing = pd.read_csv(custom_path)
+    else:
+        existing = df
+
+    updated = pd.concat([existing, new_data], ignore_index=True)
+    updated.to_csv(custom_path, index=False)
+
 @app.callback(
     Output('output', 'children'),
     Input('submit-btn', 'n_clicks'),
@@ -333,23 +351,11 @@ def update_styles(is_dark_mode):
     State('input-T', 'value'),
     State('input-P', 'value'),
 )
-def insert_into_csv(n_click, name, type, BET, Pore, Ads, T, P):
-    if n_click > 0 :
-        new_data = pd.DataFrame([[name, type, BET, Pore, Ads, T, P]], columns=['Name', 'Type of Adsorbent', 'BET Surface Area',
-                                                                           'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P'])
-        if os.path.exists(csv_file):
-            existing = pd.read_csv(csv_file)
-            updated = pd.concat([existing, new_data], ignore_index=True)
-        else:
-            updated = new_data
-        updated.to_csv(csv_file, index=False)
-
-
 def update_output(n_clicks, name, type, BET, Pore, Ads, T, P):
     if n_clicks > 0:
-        if not (name or type or BET or Pore or Ads or T or P) is None:
+        if None in (name, type, BET, Pore, Ads, T, P):
             return html.Span("Error : Please complete each data.", style={'color': 'red'})
-        else : 
+        else:
             insert_into_csv(name, type, BET, Pore, Ads, T, P),
             return f"Added : {name}, {type}, {BET}, {Pore}, {Ads}, {T}, {P}"
 
