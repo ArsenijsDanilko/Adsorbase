@@ -1,4 +1,5 @@
-from dash import Dash, dcc, html, Input, Output, State
+#Necessary imports 
+from dash import Dash, dcc, html, Input, Output, State, dash_table
 import plotly.express as px
 from pathlib import Path
 from dash.exceptions import PreventUpdate
@@ -7,6 +8,7 @@ import math
 import os
 
 
+#Importing the csv file
 cwd = Path.cwd()
 csv_file = cwd / 'adsorbents.csv'
 df = pd.read_csv(csv_file, sep=',')
@@ -23,12 +25,14 @@ units = {'BET Surface Area': 'BET Surface Area [m<sup>2</sup>/g]',
 # Default styles
 light_style = {
     'backgroundColor': 'white',
-    'color': 'black'
+    'color': 'black',
+    'transition': 'background-color 1.3s ease, color 1.3s ease'
 }
 
 dark_style = {
-    'backgroundColor': '#1e1e1e',
-    'color': 'white'
+    'backgroundColor': '#2a2a2a',
+    'color': 'white',
+    'transition': 'background-color 1.3s ease, color 1.3s ease'
 }
 
 dropdown_light_style = {
@@ -41,7 +45,10 @@ dropdown_dark_style = {
     'color': 'black'
 }
 
+#Initializing the app
 app = Dash(__name__)
+
+#Appearance of the app
 app.layout = html.Div([
     # Store to keep dark mode state
     dcc.Store(id='dark-mode-store', data=False),
@@ -49,13 +56,25 @@ app.layout = html.Div([
     html.H1(
         children='Adsorbase',
         id='title',
-        style={'textAlign': 'center'}
-    ),
+        style={
+            'textAlign': 'center',
+            'fontSize': '4em',
+            'color': 'black',
+            'letterSpacing': '3px',
+            'marginTop': '5px'
+        }),
+
     html.H3(
         children='Your reliable adsorbent database',
         id='subtitle',
-        style={'textAlign': 'center'}
-    ),
+        style={
+            'textAlign': 'center',
+            'fontSize': '1.8em',
+            'fontStyle': 'italic',
+            'color': '#444',
+            'letterSpacing': '1px'
+        }),
+
     html.Button('Activate Dark mode', id='toggle-darkmode'),
 
     html.Div([
@@ -84,16 +103,24 @@ app.layout = html.Div([
             math.floor(df['Conditions T'].min()/10)*10,
             math.ceil(df['Conditions T'].max()/10)*10,
             step=None,
+            updatemode='drag',
+            tooltip={"placement": "bottom", "always_visible": True},
+            allowCross=False,
             id='Temp-slider'
         ),
+
         html.Label("Select the right pressure conditions [bar]"),
         dcc.RangeSlider(
             math.floor(df['Conditions P'].min()),
             math.ceil(df['Conditions P'].max()),
             step=None,
+            updatemode='drag',
+            tooltip={"placement": "bottom", "always_visible": True},
+            allowCross=False,
             id='Pressure-slider'
         )
     ]),
+  
     dcc.Graph(id='indicator-graphic'),
     html.Div(id="info", style={"marginBottom": "20px", "fontWeight": "bold"}),
     html.Div([
@@ -104,8 +131,10 @@ app.layout = html.Div([
                      for col in data_options],
             value=[],
             multi=True,
+            style={'color': 'black'}
         ),
     ]),
+    
     html.H3("Adding adsorbent"),
     html.P("Please write the name and the type of adsorbent in letter, and the rest in number with a point for the decimal."),
     dcc.Input(id='input-name', type='text', placeholder='Name'),
@@ -120,10 +149,38 @@ app.layout = html.Div([
                 style={'marginLeft': '10px'}),
     html.Button('Actualize graph', id='actualize-btn', n_clicks=0,
                 style={'marginLeft': '10px'}),
-    html.Div(id='output', style={'color': 'green'})
-
+    html.Div(id='output', style={'color': 'green'}),
+    
+    html.Hr(),
+    html.H3("Filtered Adsorbents Table", style={'textAlign': 'center'}),
+    dcc.Loading(
+        id="loading-table",
+        type="default",
+        children=dash_table.DataTable(
+            id='adsorbents-table',
+            columns=[{"name": col, "id": col} for col in df.columns],
+            style_table={'overflowX': 'auto'},
+            style_cell={
+                'textAlign': 'center',
+                'minWidth': '100px',
+                'maxWidth': '200px',
+                'whiteSpace': 'normal',
+            },
+            style_header={
+                'backgroundColor': 'rgb(255, 255, 255)',
+                'fontWeight': 'bold',
+                'color': 'black'
+            },
+            style_data={
+                'backgroundColor': 'rgb(255, 255, 255)',
+                'color': 'black'
+            },
+            page_size=10
+        )
+)
 
 ], id='main-div', style=light_style)
+
 
 # Function set to count the number of element on the graph
 app.clientside_callback(
@@ -225,13 +282,20 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
 
-    filtered_df = current_data()
-    if t_range and p_range:
-        filtered_df = filtered_df[(t_range[0] <= filtered_df['Conditions T']) &
-                         (filtered_df['Conditions T'] <= t_range[1])]
-        filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (
-            filtered_df['Conditions P'] <= p_range[1])]
 
+    filtered_df = current_data()
+    if t_range:
+        filtered_df = filtered_df[
+            (t_range[0] <= filtered_df['Conditions T']) &
+            (filtered_df['Conditions T'] <= t_range[1])
+        ]
+    if p_range:
+        filtered_df = filtered_df[
+            (p_range[0] <= filtered_df['Conditions P']) & 
+            (filtered_df['Conditions P'] <= p_range[1])
+        ]
+
+    # figure
     fig = px.scatter(
         filtered_df,
         x=xaxis_column_name,
@@ -247,12 +311,9 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         template='seaborn'
     )
 
-    # Style of the hover cells
     fig.update_layout(
-        hoverlabel=dict(
-            font_size=16,
-            font_family='Arial'
-        ),
+
+        hoverlabel=dict(font_size=16, font_family='Arial'),
         xaxis_autorange=True,  # to rerange the axis after changing the sliders
         yaxis_autorange=True
     )
@@ -260,21 +321,19 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     additional_hover = ""
     if selected_hover_data:
         for data_name in selected_hover_data:
+
             index = column_titles.index(data_name)
             additional_hover += f"{units[data_name]}" + \
                 f" : %{{customdata[{index}]:.2f}} <br>"
 
-    # Format of the hover cells
     fig.update_traces(
-        hovertemplate="<b>%{customdata[0]} </b><br>" +
+        hovertemplate = ("<b>%{customdata[0]}</b><br>" + 
         "<i>%{customdata[1]}</i><br><br>" +
+
         f"{units[xaxis_column_name]}" + " : %{x:.2f} <br>" +
         f"{units[yaxis_column_name]}" + " : %{y:.2f} <br>" +
-        additional_hover +
-        "<extra></extra>",
-
+        additional_hover + "<extra></extra>",
         mode='markers',
-
         marker={'sizemode': 'area',
                 'sizeref': 10,
                 'size': 8},
@@ -282,18 +341,13 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
 
     if is_dark_mode:
         fig.update_layout(
-            paper_bgcolor='#2a2a2a',    # Graph area background
-            plot_bgcolor='#2a2a2a',     # Plot area background
-            font_color='white',         # Text color
+            transition_duration=1000,
+            paper_bgcolor='#2a2a2a',
+            plot_bgcolor='#2a2a2a',
+            font_color='white',
             title_font_color='white',
-            xaxis=dict(
-                gridcolor='#444',       # Grid line color
-                color='white'           # Axis label color
-            ),
-            yaxis=dict(
-                gridcolor='#444',
-                color='white'
-            ),
+            xaxis=dict(gridcolor='#444', color='white'),
+            yaxis=dict(gridcolor='#444', color='white')
         )
 
     fig.update_layout(transition_duration=500)
@@ -321,6 +375,12 @@ def update_dropdown_styles(is_dark_mode):
     return (dropdown_dark_style if is_dark_mode else dropdown_light_style,
             dropdown_dark_style if is_dark_mode else dropdown_light_style)
 
+@app.callback(
+    Output('toggle-darkmode', 'children'),
+    Input('dark-mode-store', 'data')
+)
+def update_toggle_label(is_dark_mode):
+    return 'Activate Light Mode' if is_dark_mode else 'Activate Dark Mode'
 
 # Callback to update styles
 @app.callback(
@@ -331,9 +391,39 @@ def update_dropdown_styles(is_dark_mode):
 )
 def update_styles(is_dark_mode):
     style = dark_style if is_dark_mode else light_style
-    center_text = {'textAlign': 'center'}
-    return style, {**style, **center_text}, {**style, **center_text}
+    # Title remains styled regardless of theme
+    title_style = {
+        'textAlign': 'center',
+        'fontSize': '4em',
+        'color': 'white' if is_dark_mode else 'black',
+        'letterSpacing': '3px',
+        'marginTop': '5px'
+    }
+    subtitle_style = {
+        'textAlign': 'center',
+        'fontSize': '1.8em',
+        'fontStyle': 'italic',
+        'color': 'white' if is_dark_mode else '#444',
+        'letterSpacing': '1px'
+    }
+    return style, title_style, subtitle_style
 
+#Callback to connect the table to the filters 
+@app.callback(
+    Output('adsorbents-table', 'data'),
+    Input('Temp-slider', 'value'),
+    Input('Pressure-slider', 'value')
+)
+def update_table(t_range, p_range):
+    if t_range is None or p_range is None:
+        raise PreventUpdate
+
+    filtered_df = df[
+        (df['Conditions T'] >= t_range[0]) & (df['Conditions T'] <= t_range[1]) &
+        (df['Conditions P'] >= p_range[0]) & (df['Conditions P'] <= p_range[1])
+    ]
+
+    return filtered_df.to_dict('records')
 
 def insert_into_csv(name, type, BET, Pore, Ads, T, P):
     new_data = pd.DataFrame(
