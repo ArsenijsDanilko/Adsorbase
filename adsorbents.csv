@@ -1,4 +1,4 @@
-Name,Type of Adsorbent,BET Surface Area,Pore volume,Adsorption capacity,Conditions T,Conditions P
+Name,Type of Adsorbent,BET Surface Area [m²/g],Pore volume [cm³/g],Adsorption capacity [mmol/g],Conditions T [K],Conditions P [bar]
 Zeolite 13X-K,Zeolite,591,0.25,6.9,298,20
 Zeolite 13X,Zeolite,369,0.92,3.3,303,1
 13X/SiO2,Zeolite,553,,3.29,298,0.25

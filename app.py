@@ -15,12 +15,6 @@ df = pd.read_csv(csv_file, sep=',')
 custom_path = cwd/ 'custom.csv'
 data_options = list(df.head(1))[2:]
 
-# Unit Dicts
-units = {'BET Surface Area': 'BET Surface Area [m<sup>2</sup>/g]',
-         'Pore volume': 'Pore volume [cm<sup>3</sup>/g]',
-         'Adsorption capacity': 'Adsorption capacity [mmol/g]',
-         'Conditions T': 'Conditions T [K]',
-         'Conditions P': 'Conditions P [bar]'}
 
 # Default styles
 light_style = {
@@ -81,7 +75,7 @@ app.layout = html.Div([
         html.Div([
             dcc.Dropdown(
                 df.columns[2:5].unique(),
-                'Pore volume',
+                'Pore volume [cm³/g]',
                 id='xaxis-column',
                 style=dropdown_light_style
             ),
@@ -90,7 +84,7 @@ app.layout = html.Div([
         html.Div([
             dcc.Dropdown(
                 df.columns[2:5].unique(),
-                'BET Surface Area',
+                'BET Surface Area [m²/g]',
                 id='yaxis-column',
                 style=dropdown_light_style
             ),
@@ -100,8 +94,8 @@ app.layout = html.Div([
     html.Div([
         html.Label("Select the right temperature conditions [K]"),
         dcc.RangeSlider(
-            math.floor(df['Conditions T'].min()/10)*10,
-            math.ceil(df['Conditions T'].max()/10)*10,
+            math.floor(df['Conditions T [K]'].min()/10)*10,
+            math.ceil(df['Conditions T [K]'].max()/10)*10,
             step=None,
             updatemode='drag',
             tooltip={"placement": "bottom", "always_visible": True},
@@ -111,8 +105,8 @@ app.layout = html.Div([
 
         html.Label("Select the right pressure conditions [bar]"),
         dcc.RangeSlider(
-            math.floor(df['Conditions P'].min()),
-            math.ceil(df['Conditions P'].max()),
+            math.floor(df['Conditions P [bar]'].min()),
+            math.ceil(df['Conditions P [bar]'].max()),
             step=None,
             updatemode='drag',
             tooltip={"placement": "bottom", "always_visible": True},
@@ -140,11 +134,11 @@ app.layout = html.Div([
     dcc.Input(id='input-name', type='text', placeholder='Name'),
     dcc.Input(id='input-type', type='text', placeholder='Type of adsorbent'),
     dcc.Input(id='input-BET', type='number', placeholder='BET Surface Area'),
-    dcc.Input(id='input-Pore', type='number', placeholder='Pore volume'),
+    dcc.Input(id='input-Pore', type='number', placeholder='Pore volume [cm³/g]'),
     dcc.Input(id='input-Ads', type='number',
               placeholder='Adsorption capacity'),
-    dcc.Input(id='input-T', type='number', placeholder='Conditions T'),
-    dcc.Input(id='input-P', type='number', placeholder='Conditions P'),
+    dcc.Input(id='input-T', type='number', placeholder='Conditions T [K]'),
+    dcc.Input(id='input-P', type='number', placeholder='Conditions P [bar]'),
     html.Button('Add', id='submit-btn', n_clicks=0,
                 style={'marginLeft': '10px'}),
     html.Button('Actualize graph', id='actualize-btn', n_clicks=0,
@@ -285,13 +279,13 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     filtered_df = current_data()
     if t_range:
         filtered_df = filtered_df[
-            (t_range[0] <= filtered_df['Conditions T']) &
-            (filtered_df['Conditions T'] <= t_range[1])
+            (t_range[0] <= filtered_df['Conditions T [K]']) &
+            (filtered_df['Conditions T [K]'] <= t_range[1])
         ]
     if p_range:
         filtered_df = filtered_df[
-            (p_range[0] <= filtered_df['Conditions P']) & 
-            (filtered_df['Conditions P'] <= p_range[1])
+            (p_range[0] <= filtered_df['Conditions P [bar]']) & 
+            (filtered_df['Conditions P [bar]'] <= p_range[1])
         ]
 
     # figure
@@ -299,19 +293,17 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         filtered_df,
         x=xaxis_column_name,
         y=yaxis_column_name,
-        labels={xaxis_column_name: units[xaxis_column_name],
-                yaxis_column_name: units[yaxis_column_name]},
+        # labels={xaxis_column_name: units[xaxis_column_name],
+        #         yaxis_column_name: units[yaxis_column_name]},
         color=filtered_df.columns[1],
         symbol="Type of Adsorbent",
         hover_name=filtered_df.columns[0],
         title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
-        custom_data=['Name', 'Type of Adsorbent', 'BET Surface Area',
-                     'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P'],
+        custom_data=list(df.head(1)),
         template='seaborn'
     )
 
     fig.update_layout(
-
         hoverlabel=dict(font_size=16, font_family='Arial'),
         xaxis_autorange=True,  # to rerange the axis after changing the sliders
         yaxis_autorange=True
@@ -322,15 +314,15 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         for data_name in selected_hover_data:
 
             index = column_titles.index(data_name)
-            additional_hover += f"{units[data_name]}" + \
+            additional_hover += f"{data_name}" + \
                 f" : %{{customdata[{index}]:.2f}} <br>"
 
     fig.update_traces(
         hovertemplate = ("<b>%{customdata[0]}</b><br>" + 
         "<i>%{customdata[1]}</i><br><br>" +
 
-        f"{units[xaxis_column_name]}" + " : %{x:.2f} <br>" +
-        f"{units[yaxis_column_name]}" + " : %{y:.2f} <br>" +
+        f"{xaxis_column_name}" + " : %{x:.2f} <br>" +
+        f"{yaxis_column_name}" + " : %{y:.2f} <br>" +
         additional_hover + "<extra></extra>"),
         mode='markers',
         marker={'sizemode': 'area',
@@ -418,8 +410,8 @@ def update_table(t_range, p_range):
         raise PreventUpdate
 
     filtered_df = df[
-        (df['Conditions T'] >= t_range[0]) & (df['Conditions T'] <= t_range[1]) &
-        (df['Conditions P'] >= p_range[0]) & (df['Conditions P'] <= p_range[1])
+        (df['Conditions T [K]'] >= t_range[0]) & (df['Conditions T [K]'] <= t_range[1]) &
+        (df['Conditions P [bar]'] >= p_range[0]) & (df['Conditions P [bar]'] <= p_range[1])
     ]
 
     return filtered_df.to_dict('records')
