@@ -122,7 +122,7 @@ app.layout = html.Div([
     ]),
   
     dcc.Graph(id='indicator-graphic'),
-    html.Div(id="info", style={"marginBottom": "20px", "fontWeight": "bold"}),
+    html.Div(id="selected-number", style={"marginBottom": "20px", "fontWeight": "bold"}),
     html.Div([
         html.Label('Select hover data:'),
         dcc.Dropdown(
@@ -237,14 +237,13 @@ app.clientside_callback(
     return "Selected points : " + totalElements;
     }   
     """,
-    Output("info", "children"),
+    Output("selected-number", "children"),
     [Input("indicator-graphic", "restyleData"), Input("indicator-graphic", "relayoutData"), Input("indicator-graphic", "figure"),
      Input("Temp-slider", "value"), Input("Pressure-slider", "value")]
 )
 
+
 # Callback to update hover dropdown options
-
-
 @app.callback(
     Output('hover-dropdown', 'options'),
     Input('xaxis-column', 'value'),
@@ -332,11 +331,11 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
 
         f"{units[xaxis_column_name]}" + " : %{x:.2f} <br>" +
         f"{units[yaxis_column_name]}" + " : %{y:.2f} <br>" +
-        additional_hover + "<extra></extra>",
+        additional_hover + "<extra></extra>"),
         mode='markers',
         marker={'sizemode': 'area',
                 'sizeref': 10,
-                'size': 8},
+                'size': 8}
     )
 
     if is_dark_mode:
@@ -415,7 +414,7 @@ def update_styles(is_dark_mode):
     Input('Pressure-slider', 'value')
 )
 def update_table(t_range, p_range):
-    if t_range is None or p_range is None:
+    if (t_range is None) or (p_range is None):
         raise PreventUpdate
 
     filtered_df = df[
