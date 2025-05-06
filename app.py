@@ -118,7 +118,10 @@ app.layout = html.Div([
     dcc.Input(id='input-P', type='number', placeholder='Conditions P'),
     html.Button('Add', id='submit-btn', n_clicks=0,
                 style={'marginLeft': '10px'}),
+    html.Button('Actualize graph', id='actualize-btn', n_clicks=0,
+                style={'marginLeft': '10px'}),
     html.Div(id='output', style={'color': 'green'})
+
 
 ], id='main-div', style=light_style)
 
@@ -197,11 +200,16 @@ def update_hover_dropdown(x_axis, y_axis):
     return [{'label': col, 'value': col} for col in hover_candidates]
 
 
-data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
-              'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P')
+column_titles = list(df.head(1))
+
+def current_data()->pd.DataFrame:
+    if os.path.exists(custom_path):
+        df = pd.read_csv(custom_path)
+    else:
+        df = pd.read_csv(csv_file)
+    return df
 
 # Callback to update graph
-
 
 @app.callback(
     Output('indicator-graphic', 'figure'),
@@ -210,16 +218,17 @@ data_index = ('Name', 'Type of Adsorbent', 'BET Surface Area',
     Input('hover-dropdown', 'value'),
     Input('dark-mode-store', 'data'),
     Input('Temp-slider', 'value'),
-    Input('Pressure-slider', 'value')
+    Input('Pressure-slider', 'value'),
+    Input('actualize-btn', 'n_clicks')
 )
-def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range):
+def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range, n_clicks):
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
 
-    filtered_df = df
-    if (t_range is not None) and (p_range is not None):
-        filtered_df = df[(t_range[0] <= df['Conditions T']) &
-                         (df['Conditions T'] <= t_range[1])]
+    filtered_df = current_data()
+    if t_range and p_range:
+        filtered_df = filtered_df[(t_range[0] <= filtered_df['Conditions T']) &
+                         (filtered_df['Conditions T'] <= t_range[1])]
         filtered_df = filtered_df[(p_range[0] <= filtered_df['Conditions P']) & (
             filtered_df['Conditions P'] <= p_range[1])]
 
@@ -229,9 +238,9 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         y=yaxis_column_name,
         labels={xaxis_column_name: units[xaxis_column_name],
                 yaxis_column_name: units[yaxis_column_name]},
-        color=df.columns[1],
+        color=filtered_df.columns[1],
         symbol="Type of Adsorbent",
-        hover_name=df.columns[0],
+        hover_name=filtered_df.columns[0],
         title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
         custom_data=['Name', 'Type of Adsorbent', 'BET Surface Area',
                      'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P'],
@@ -251,7 +260,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     additional_hover = ""
     if selected_hover_data:
         for data_name in selected_hover_data:
-            index = data_index.index(data_name)
+            index = column_titles.index(data_name)
             additional_hover += f"{units[data_name]}" + \
                 f" : %{{customdata[{index}]:.2f}} <br>"
 
@@ -332,12 +341,7 @@ def insert_into_csv(name, type, BET, Pore, Ads, T, P):
         columns=list(df.head(1))
     )
 
-    if os.path.exists(custom_path):
-        existing = pd.read_csv(custom_path)
-    else:
-        existing = df
-
-    updated = pd.concat([existing, new_data], ignore_index=True)
+    updated = pd.concat([current_data(), new_data], ignore_index=True)
     updated.to_csv(custom_path, index=False)
 
 @app.callback(
