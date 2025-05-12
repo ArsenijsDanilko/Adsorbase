@@ -1,13 +1,4 @@
-- Rajouter adsorbants
-- Rajouter infos sur adsorbants, separation ratio CO2/N2 pour les adsorbants concernés
-- Implémenter Dash
-- Faire des filtres/sliders / fait 
 - Formatter le graphe/ fait, mais darkmode à améliorer
 
 - rendre le site joli / mouais
 - faire le package/tests/README/etc 
-
-
-éventuellement:
-- clusters
-- smiles/molobjects/...
