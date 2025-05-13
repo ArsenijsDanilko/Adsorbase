@@ -172,8 +172,9 @@ app.layout = html.Div([
             },
             page_size=10
         )
-)
-
+),
+    html.Button("Export Filtered Data", id="export-btn", n_clicks=0, style={'marginTop': '20px'}),
+    dcc.Download(id="download-dataframe-csv")
 ], id='main-div', style=light_style)
 
 
@@ -445,6 +446,24 @@ def update_output(n_clicks, name, type, BET, Pore, Ads, T, P):
             insert_into_csv(name, type, BET, Pore, Ads, T, P),
             return f"Added : {name}, {type}, {BET}, {Pore}, {Ads}, {T}, {P}"
 
+@app.callback(
+    Output("download-dataframe-csv", "data"),
+    Input("export-btn", "n_clicks"),
+    State("xaxis-column", "value"),
+    State("yaxis-column", "value"),
+    State("Temp-slider", "value"),
+    State("Pressure-slider", "value"),
+    prevent_initial_call=True
+)
+def export_filtered_data(n_clicks, x_col, y_col, t_range, p_range):
+    dff = current_data()
+
+    if t_range:
+        dff = dff[(dff['Conditions T'] >= t_range[0]) & (dff['Conditions T'] <= t_range[1])]
+    if p_range:
+        dff = dff[(dff['Conditions P'] >= p_range[0]) & (dff['Conditions P'] <= p_range[1])]
+
+    return dcc.send_data_frame(dff.to_csv, filename="filtered_data.csv", index=False)
 
 if __name__ == '__main__':
     app.run(debug=True)
