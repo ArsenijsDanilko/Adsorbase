@@ -459,9 +459,9 @@ def export_filtered_data(n_clicks, x_col, y_col, t_range, p_range):
     dff = current_data()
 
     if t_range:
-        dff = dff[(dff['Conditions T'] >= t_range[0]) & (dff['Conditions T'] <= t_range[1])]
+        dff = dff[(dff['Conditions T [K]'] >= t_range[0]) & (dff['Conditions T [K]'] <= t_range[1])]
     if p_range:
-        dff = dff[(dff['Conditions P'] >= p_range[0]) & (dff['Conditions P'] <= p_range[1])]
+        dff = dff[(dff['Conditions P [bar]'] >= p_range[0]) & (dff['Conditions P [bar]'] <= p_range[1])]
 
     return dcc.send_data_frame(dff.to_csv, filename="filtered_data.csv", index=False)
 
