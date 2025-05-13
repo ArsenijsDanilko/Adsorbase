@@ -6,6 +6,7 @@ from dash.exceptions import PreventUpdate
 import pandas as pd
 import math
 import os
+import styles as st
 
 
 #Importing the csv file
@@ -15,29 +16,6 @@ df = pd.read_csv(csv_file, sep=',')
 custom_path = cwd/ 'custom.csv'
 data_options = list(df.head(1))[2:]
 
-
-# Default styles
-light_style = {
-    'backgroundColor': 'white',
-    'color': 'black',
-    'transition': 'background-color 1.3s ease, color 1.3s ease'
-}
-
-dark_style = {
-    'backgroundColor': '#2a2a2a',
-    'color': 'white',
-    'transition': 'background-color 1.3s ease, color 1.3s ease'
-}
-
-dropdown_light_style = {
-    'backgroundColor': 'white',
-    'color': 'black'
-}
-
-dropdown_dark_style = {
-    'backgroundColor': 'white',
-    'color': 'black'
-}
 
 #Initializing the app
 app = Dash(__name__)
@@ -77,7 +55,7 @@ app.layout = html.Div([
                 df.columns[2:5].unique(),
                 'Pore volume [cm³/g]',
                 id='xaxis-column',
-                style=dropdown_light_style
+                style=st.dropdown_light
             ),
         ], id='xaxis-container', style={'width': '48%', 'display': 'inline-block'}),
 
@@ -86,7 +64,7 @@ app.layout = html.Div([
                 df.columns[2:5].unique(),
                 'BET Surface Area [m²/g]',
                 id='yaxis-column',
-                style=dropdown_light_style
+                style=st.dropdown_light
             ),
         ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
     ]),
@@ -175,7 +153,7 @@ app.layout = html.Div([
 ),
     html.Button("Export Filtered Data", id="export-btn", n_clicks=0, style={'marginTop': '20px'}),
     dcc.Download(id="download-dataframe-csv")
-], id='main-div', style=light_style)
+], id='main-div', style=st.light)
 
 
 # Function set to count the number of element on the graph
@@ -261,8 +239,8 @@ def current_data()->pd.DataFrame:
         df = pd.read_csv(csv_file)
     return df
 
-# Callback to update graph
 
+# Callback to update graph
 @app.callback(
     Output('indicator-graphic', 'figure'),
     Input('xaxis-column', 'value'),
@@ -365,8 +343,8 @@ def toggle_dark_mode(n_clicks, current_state):
     Input('dark-mode-store', 'data')
 )
 def update_dropdown_styles(is_dark_mode):
-    return (dropdown_dark_style if is_dark_mode else dropdown_light_style,
-            dropdown_dark_style if is_dark_mode else dropdown_light_style)
+    return (st.dropdown_dark if is_dark_mode else st.dropdown_light,
+            st.dropdown_dark if is_dark_mode else st.dropdown_light)
 
 @app.callback(
     Output('toggle-darkmode', 'children'),
@@ -383,7 +361,7 @@ def update_toggle_label(is_dark_mode):
     Input('dark-mode-store', 'data')
 )
 def update_styles(is_dark_mode):
-    style = dark_style if is_dark_mode else light_style
+    style = st.dark if is_dark_mode else st.light
     # Title remains styled regardless of theme
     title_style = {
         'textAlign': 'center',
