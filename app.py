@@ -1,12 +1,14 @@
 #Necessary imports 
 from dash import Dash, dcc, html, Input, Output, State, dash_table
+import plotly as pio
 import plotly.express as px
 from pathlib import Path
 from dash.exceptions import PreventUpdate
 import pandas as pd
 import math
 import os
-
+import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import load_figure_template, ThemeSwitchAIO
 
 #Importing the csv file
 cwd = Path.cwd()
@@ -22,44 +24,32 @@ units = {'BET Surface Area': 'BET Surface Area [m<sup>2</sup>/g]',
          'Conditions T': 'Conditions T [K]',
          'Conditions P': 'Conditions P [bar]'}
 
-# Default styles
-light_style = {
-    'backgroundColor': 'white',
-    'color': 'black',
-    'transition': 'background-color 1.3s ease, color 1.3s ease'
-}
-
-dark_style = {
-    'backgroundColor': '#2a2a2a',
-    'color': 'white',
-    'transition': 'background-color 1.3s ease, color 1.3s ease'
-}
-
-dropdown_light_style = {
-    'backgroundColor': 'white',
-    'color': 'black'
-}
-
-dropdown_dark_style = {
-    'backgroundColor': 'white',
-    'color': 'black'
-}
-
 #Initializing the app
-app = Dash(__name__)
+app = Dash(external_stylesheets=[dbc.themes.COSMO])
+
+load_figure_template(["cosmo", "darkly"])
+
+theme_switch = ThemeSwitchAIO(
+    aio_id="theme", themes=[dbc.themes.COSMO, dbc.themes.DARKLY]
+)
+#adds a color switch
+color_mode_switch =  html.Span(
+    [
+        dbc.Label(className="fa fa-moon", html_for="color-mode-switch"),
+        dbc.Switch( id="color-mode-switch", value=False, className="d-inline-block ms-1", persistence=True),
+        dbc.Label(className="fa fa-sun", html_for="color-mode-switch"),
+    ]
+)
 
 #Appearance of the app
 app.layout = html.Div([
-    # Store to keep dark mode state
-    dcc.Store(id='dark-mode-store', data=False),
-
+    dcc.Store(id='theme-store'),
     html.H1(
         children='Adsorbase',
         id='title',
         style={
             'textAlign': 'center',
             'fontSize': '4em',
-            'color': 'black',
             'letterSpacing': '3px',
             'marginTop': '5px'
         }),
@@ -71,30 +61,28 @@ app.layout = html.Div([
             'textAlign': 'center',
             'fontSize': '1.8em',
             'fontStyle': 'italic',
-            'color': '#444',
             'letterSpacing': '1px'
         }),
-
-    html.Button('Activate Dark mode', id='toggle-darkmode'),
+    html.Div([
+    theme_switch,
+    ], style={"textAlign": "center", "marginBottom": "20px"}),
 
     html.Div([
         html.Div([
             dcc.Dropdown(
                 df.columns[2:5].unique(),
                 'Pore volume',
-                id='xaxis-column',
-                style=dropdown_light_style
+                id='xaxis-column'
             ),
-        ], id='xaxis-container', style={'width': '48%', 'display': 'inline-block'}),
+        ], id='xaxis-container', style={'width': '48%', 'display': 'inline-block', 'color':'black'}),
 
         html.Div([
             dcc.Dropdown(
                 df.columns[2:5].unique(),
                 'BET Surface Area',
-                id='yaxis-column',
-                style=dropdown_light_style
+                id='yaxis-column'
             ),
-        ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
+        ], id='yaxis-container', style={'width': '48%', 'color': 'black', 'float': 'right', 'display': 'inline-block'})
     ]),
 
     html.Div([
@@ -129,7 +117,7 @@ app.layout = html.Div([
                      for col in data_options],
             value=[],
             multi=True,
-            style={'color': 'black'}
+            style={'color': 'black', 'width': '75%', 'text-alignment': 'center'}
         ),
     ]),
   
@@ -181,7 +169,14 @@ app.layout = html.Div([
 ),
     html.Button("Export Filtered Data", id="export-btn", n_clicks=0, style={'marginTop': '20px'}),
     dcc.Download(id="download-dataframe-csv")
-], id='main-div', style=light_style)
+], id='main-div')
+
+@app.callback(
+    Output('theme-store', 'data'),
+    Input(ThemeSwitchAIO.ids.switch("theme"), "value")
+)
+def store_theme_value(is_dark):
+    return {"theme": "darkly" if is_dark else "cosmos"}
 
 
 # Function set to count the number of element on the graph
@@ -240,8 +235,7 @@ app.clientside_callback(
     }   
     """,
     Output("selected-number", "children"),
-    [Input("indicator-graphic", "restyleData"), Input("indicator-graphic", "relayoutData"), Input("indicator-graphic", "figure"),
-     Input("Temp-slider", "value"), Input("Pressure-slider", "value")]
+    Input("indicator-graphic", "figure")
 )
 
 
@@ -271,20 +265,20 @@ def current_data()->pd.DataFrame:
 
 @app.callback(
     Output('indicator-graphic', 'figure'),
+    Input(ThemeSwitchAIO.ids.switch("theme"), "value"),
     Input('xaxis-column', 'value'),
     Input('yaxis-column', 'value'),
     Input('hover-dropdown', 'value'),
-    Input('dark-mode-store', 'data'),
     Input('Temp-slider', 'value'),
     Input('Pressure-slider', 'value'),
     Input('actualize-btn', 'n_clicks')
 )
-def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range, n_clicks):
+def update_graph(theme, xaxis_column_name, yaxis_column_name, selected_hover_data, t_range, p_range, n_clicks):
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
 
-
     filtered_df = current_data()
+
     if t_range:
         filtered_df = filtered_df[
             (t_range[0] <= filtered_df['Conditions T']) &
@@ -296,7 +290,9 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
             (filtered_df['Conditions P'] <= p_range[1])
         ]
 
-    # figure
+    # Choose Plotly template based on theme
+    template = "cosmo" if theme else "darkly"
+
     fig = px.scatter(
         filtered_df,
         x=xaxis_column_name,
@@ -309,105 +305,34 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
         custom_data=['Name', 'Type of Adsorbent', 'BET Surface Area',
                      'Pore volume', 'Adsorption capacity', 'Conditions T', 'Conditions P'],
-        template='seaborn'
+        template=template
     )
 
     fig.update_layout(
-
         hoverlabel=dict(font_size=16, font_family='Arial'),
-        xaxis_autorange=True,  # to rerange the axis after changing the sliders
+        xaxis_autorange=True,
         yaxis_autorange=True
     )
 
     additional_hover = ""
     if selected_hover_data:
         for data_name in selected_hover_data:
-
             index = column_titles.index(data_name)
-            additional_hover += f"{units[data_name]}" + \
-                f" : %{{customdata[{index}]:.2f}} <br>"
+            additional_hover += f"{units[data_name]} : %{{customdata[{index}]:.2f}} <br>"
 
     fig.update_traces(
-        hovertemplate = ("<b>%{customdata[0]}</b><br>" + 
-        "<i>%{customdata[1]}</i><br><br>" +
-
-        f"{units[xaxis_column_name]}" + " : %{x:.2f} <br>" +
-        f"{units[yaxis_column_name]}" + " : %{y:.2f} <br>" +
-        additional_hover + "<extra></extra>"),
+        hovertemplate=(
+            "<b>%{customdata[0]}</b><br>"
+            "<i>%{customdata[1]}</i><br><br>"
+            f"{units[xaxis_column_name]} : %{{x:.2f}} <br>"
+            f"{units[yaxis_column_name]} : %{{y:.2f}} <br>"
+            f"{additional_hover}<extra></extra>"
+        ),
         mode='markers',
-        marker={'sizemode': 'area',
-                'sizeref': 10,
-                'size': 8}
+        marker={'sizemode': 'area', 'sizeref': 10, 'size': 8}
     )
 
-    if is_dark_mode:
-        fig.update_layout(
-            transition_duration=1000,
-            paper_bgcolor='#2a2a2a',
-            plot_bgcolor='#2a2a2a',
-            font_color='white',
-            title_font_color='white',
-            xaxis=dict(gridcolor='#444', color='white'),
-            yaxis=dict(gridcolor='#444', color='white')
-        )
-
-    fig.update_layout(transition_duration=500)
     return fig
-
-
-# Callback to toggle dark mode
-@app.callback(
-    Output('dark-mode-store', 'data'),
-    Input('toggle-darkmode', 'n_clicks'),
-    State('dark-mode-store', 'data')
-)
-def toggle_dark_mode(n_clicks, current_state):
-    if n_clicks is None:
-        raise PreventUpdate
-    return not current_state  # Toggle boolean
-
-
-@app.callback(
-    Output('xaxis-column', 'style'),
-    Output('yaxis-column', 'style'),
-    Input('dark-mode-store', 'data')
-)
-def update_dropdown_styles(is_dark_mode):
-    return (dropdown_dark_style if is_dark_mode else dropdown_light_style,
-            dropdown_dark_style if is_dark_mode else dropdown_light_style)
-
-@app.callback(
-    Output('toggle-darkmode', 'children'),
-    Input('dark-mode-store', 'data')
-)
-def update_toggle_label(is_dark_mode):
-    return 'Activate Light Mode' if is_dark_mode else 'Activate Dark Mode'
-
-# Callback to update styles
-@app.callback(
-    Output('main-div', 'style'),
-    Output('title', 'style'),
-    Output('subtitle', 'style'),
-    Input('dark-mode-store', 'data')
-)
-def update_styles(is_dark_mode):
-    style = dark_style if is_dark_mode else light_style
-    # Title remains styled regardless of theme
-    title_style = {
-        'textAlign': 'center',
-        'fontSize': '4em',
-        'color': 'white' if is_dark_mode else 'black',
-        'letterSpacing': '3px',
-        'marginTop': '5px'
-    }
-    subtitle_style = {
-        'textAlign': 'center',
-        'fontSize': '1.8em',
-        'fontStyle': 'italic',
-        'color': 'white' if is_dark_mode else '#444',
-        'letterSpacing': '1px'
-    }
-    return style, title_style, subtitle_style
 
 #Callback to connect the table to the filters 
 @app.callback(
