@@ -92,9 +92,6 @@ def update_hover_dropdown(x_axis, y_axis):
     return [{'label': col, 'value': col} for col in hover_candidates]
 
 
-column_titles = list(df.head(1))
-
-
 def current_data() -> pd.DataFrame:
     if os.path.exists(custom_path):
         df = pd.read_csv(custom_path)
@@ -155,7 +152,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     if selected_hover_data:
         for data_name in selected_hover_data:
 
-            index = column_titles.index(data_name)
+            index = utils.column_titles.index(data_name)
             additional_hover += f"{data_name}" + \
                 f" : %{{customdata[{index}]:.2f}} <br>"
 
