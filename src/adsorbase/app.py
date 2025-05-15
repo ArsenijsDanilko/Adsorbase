@@ -3,153 +3,19 @@ import plotly.express as px
 from pathlib import Path
 from dash.exceptions import PreventUpdate
 import pandas as pd
-import math
 import os
-import styles as st
+import adsorbase.styles as st
+from adsorbase.layout import full_layout
+import adsorbase.utils as utils
 
-
-cwd = Path.cwd()
-csv_file = cwd / 'adsorbents.csv'
-df = pd.read_csv(csv_file, sep=',')
-custom_path = cwd/ 'custom.csv'
-data_options = list(df.head(1))[2:]
-
+csv_file = utils.ROOT_PATH / 'data/adsorbents.csv'
+df = utils.load_df()
+custom_path = utils.ROOT_PATH / 'data/custom.csv'
+data_options = utils.column_titles[2:]
 
 app = Dash(__name__)
 
-app.layout = html.Div([
-    # Store to keep dark mode state
-    dcc.Store(id='dark-mode-store', data=False),
-
-    html.H1(
-        children='Adsorbase',
-        id='title',
-        style={
-            'textAlign': 'center',
-            'fontSize': '4em',
-            'color': 'black',
-            'letterSpacing': '3px',
-            'marginTop': '5px'
-        }),
-
-    html.H3(
-        children='Your reliable adsorbent database',
-        id='subtitle',
-        style={
-            'textAlign': 'center',
-            'fontSize': '1.8em',
-            'fontStyle': 'italic',
-            'color': '#444',
-            'letterSpacing': '1px'
-        }),
-
-    html.Button('Activate Dark mode', id='toggle-darkmode'),
-
-    html.Div([
-        html.Div([
-            dcc.Dropdown(
-                df.columns[2:5].unique(),
-                'Pore volume [cm³/g]',
-                id='xaxis-column',
-                style=st.dropdown_light
-            ),
-        ], id='xaxis-container', style={'width': '48%', 'display': 'inline-block'}),
-
-        html.Div([
-            dcc.Dropdown(
-                df.columns[2:5].unique(),
-                'BET Surface Area [m²/g]',
-                id='yaxis-column',
-                style=st.dropdown_light
-            ),
-        ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
-    ]),
-
-    html.Div([
-        html.Label("Select the right temperature conditions [K]"),
-        dcc.RangeSlider(
-            math.floor(df['Conditions T [K]'].min()/10)*10,
-            math.ceil(df['Conditions T [K]'].max()/10)*10,
-            step=None,
-            updatemode='drag',
-            tooltip={"placement": "bottom", "always_visible": True},
-            allowCross=False,
-            id='Temp-slider'
-        ),
-
-        html.Label("Select the right pressure conditions [bar]"),
-        dcc.RangeSlider(
-            math.floor(df['Conditions P [bar]'].min()),
-            math.ceil(df['Conditions P [bar]'].max()),
-            step=None,
-            updatemode='drag',
-            tooltip={"placement": "bottom", "always_visible": True},
-            allowCross=False,
-            id='Pressure-slider'
-        )
-    ]),
-
-    html.Div([
-        html.Label('Select hover data:'),
-        dcc.Dropdown(
-            id='hover-dropdown',
-            options=[{'label': col, 'value': col}
-                     for col in data_options],
-            value=[],
-            multi=True,
-            style={'color': 'black'}
-        ),
-    ]),
-  
-    dcc.Graph(id='indicator-graphic'),
-    html.Div(id="selected-number", style={"marginBottom": "20px", "fontWeight": "bold"}),
-    
-    html.H3("Adding adsorbent"),
-    html.P("Please write the name and the type of adsorbent in letter, and the rest in number with a point for the decimal."),
-    dcc.Input(id='input-name', type='text', placeholder='Name'),
-    dcc.Input(id='input-type', type='text', placeholder='Type of adsorbent'),
-    dcc.Input(id='input-BET', type='number', placeholder='BET Surface Area'),
-    dcc.Input(id='input-Pore', type='number', placeholder='Pore volume [cm³/g]'),
-    dcc.Input(id='input-Ads', type='number',
-              placeholder='Adsorption capacity'),
-    dcc.Input(id='input-T', type='number', placeholder='Conditions T [K]'),
-    dcc.Input(id='input-P', type='number', placeholder='Conditions P [bar]'),
-    html.Button('Add', id='submit-btn', n_clicks=0,
-                style={'marginLeft': '10px'}),
-    html.Button('Actualize graph', id='actualize-btn', n_clicks=0,
-                style={'marginLeft': '10px'}),
-    html.Div(id='output', style={'color': 'green'}),
-    
-    html.Hr(),
-    html.H3("Filtered Adsorbents Table", style={'textAlign': 'center'}),
-    dcc.Loading(
-        id="loading-table",
-        type="default",
-        children=dash_table.DataTable(
-            id='adsorbents-table',
-            columns=[{"name": col, "id": col} for col in df.columns],
-            style_table={'overflowX': 'auto'},
-            style_cell={
-                'textAlign': 'center',
-                'minWidth': '100px',
-                'maxWidth': '200px',
-                'whiteSpace': 'normal',
-            },
-            style_header={
-                'backgroundColor': 'rgb(255, 255, 255)',
-                'fontWeight': 'bold',
-                'color': 'black'
-            },
-            style_data={
-                'backgroundColor': 'rgb(255, 255, 255)',
-                'color': 'black'
-            },
-            page_size=10
-        )
-),
-    html.Button("Export Filtered Data", id="export-btn", n_clicks=0, style={'marginTop': '20px'}),
-    dcc.Download(id="download-dataframe-csv")
-], id='main-div', style=st.light)
+app.layout = full_layout
 
 
 # Function set to count the number of element on the graph
@@ -228,7 +94,8 @@ def update_hover_dropdown(x_axis, y_axis):
 
 column_titles = list(df.head(1))
 
-def current_data()->pd.DataFrame:
+
+def current_data() -> pd.DataFrame:
     if os.path.exists(custom_path):
         df = pd.read_csv(custom_path)
     else:
@@ -251,7 +118,6 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
 
-
     filtered_df = current_data()
     if t_range:
         filtered_df = filtered_df[
@@ -260,7 +126,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         ]
     if p_range:
         filtered_df = filtered_df[
-            (p_range[0] <= filtered_df['Conditions P [bar]']) & 
+            (p_range[0] <= filtered_df['Conditions P [bar]']) &
             (filtered_df['Conditions P [bar]'] <= p_range[1])
         ]
 
@@ -294,12 +160,12 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
                 f" : %{{customdata[{index}]:.2f}} <br>"
 
     fig.update_traces(
-        hovertemplate = ("<b>%{customdata[0]}</b><br>" + 
-        "<i>%{customdata[1]}</i><br><br>" +
+        hovertemplate=("<b>%{customdata[0]}</b><br>" +
+                       "<i>%{customdata[1]}</i><br><br>" +
 
-        f"{xaxis_column_name}" + " : %{x:.2f} <br>" +
-        f"{yaxis_column_name}" + " : %{y:.2f} <br>" +
-        additional_hover + "<extra></extra>"),
+                       f"{xaxis_column_name}" + " : %{x:.2f} <br>" +
+                       f"{yaxis_column_name}" + " : %{y:.2f} <br>" +
+                       additional_hover + "<extra></extra>"),
         mode='markers',
         marker={'sizemode': 'area',
                 'sizeref': 10,
@@ -342,6 +208,7 @@ def update_dropdown_styles(is_dark_mode):
     return (st.dropdown_dark if is_dark_mode else st.dropdown_light,
             st.dropdown_dark if is_dark_mode else st.dropdown_light)
 
+
 @app.callback(
     Output('toggle-darkmode', 'children'),
     Input('dark-mode-store', 'data')
@@ -350,6 +217,8 @@ def update_toggle_label(is_dark_mode):
     return 'Activate Light Mode' if is_dark_mode else 'Activate Dark Mode'
 
 # Callback to update styles
+
+
 @app.callback(
     Output('main-div', 'style'),
     Output('title', 'style'),
@@ -375,7 +244,9 @@ def update_styles(is_dark_mode):
     }
     return style, title_style, subtitle_style
 
-#Callback to connect the table to the filters 
+# Callback to connect the table to the filters
+
+
 @app.callback(
     Output('adsorbents-table', 'data'),
     Input('Temp-slider', 'value'),
@@ -387,10 +258,12 @@ def update_table(t_range, p_range):
 
     filtered_df = df[
         (df['Conditions T [K]'] >= t_range[0]) & (df['Conditions T [K]'] <= t_range[1]) &
-        (df['Conditions P [bar]'] >= p_range[0]) & (df['Conditions P [bar]'] <= p_range[1])
+        (df['Conditions P [bar]'] >= p_range[0]) & (
+            df['Conditions P [bar]'] <= p_range[1])
     ]
 
     return filtered_df.to_dict('records')
+
 
 def insert_into_csv(name, type, BET, Pore, Ads, T, P):
     new_data = pd.DataFrame(
@@ -400,6 +273,7 @@ def insert_into_csv(name, type, BET, Pore, Ads, T, P):
 
     updated = pd.concat([current_data(), new_data], ignore_index=True)
     updated.to_csv(custom_path, index=False)
+
 
 @app.callback(
     Output('output', 'children'),
@@ -420,6 +294,7 @@ def update_output(n_clicks, name, type, BET, Pore, Ads, T, P):
             insert_into_csv(name, type, BET, Pore, Ads, T, P),
             return f"Added : {name}, {type}, {BET}, {Pore}, {Ads}, {T}, {P}"
 
+
 @app.callback(
     Output("download-dataframe-csv", "data"),
     Input("export-btn", "n_clicks"),
@@ -433,11 +308,14 @@ def export_filtered_data(n_clicks, x_col, y_col, t_range, p_range):
     dff = current_data()
 
     if t_range:
-        dff = dff[(dff['Conditions T [K]'] >= t_range[0]) & (dff['Conditions T [K]'] <= t_range[1])]
+        dff = dff[(dff['Conditions T [K]'] >= t_range[0]) &
+                  (dff['Conditions T [K]'] <= t_range[1])]
     if p_range:
-        dff = dff[(dff['Conditions P [bar]'] >= p_range[0]) & (dff['Conditions P [bar]'] <= p_range[1])]
+        dff = dff[(dff['Conditions P [bar]'] >= p_range[0]) &
+                  (dff['Conditions P [bar]'] <= p_range[1])]
 
     return dcc.send_data_frame(dff.to_csv, filename="filtered_data.csv", index=False)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
