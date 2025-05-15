@@ -1,4 +1,3 @@
-#Necessary imports 
 from dash import Dash, dcc, html, Input, Output, State, dash_table
 import plotly.express as px
 from pathlib import Path
@@ -9,7 +8,6 @@ import os
 import styles as st
 
 
-#Importing the csv file
 cwd = Path.cwd()
 csv_file = cwd / 'adsorbents.csv'
 df = pd.read_csv(csv_file, sep=',')
@@ -17,10 +15,8 @@ custom_path = cwd/ 'custom.csv'
 data_options = list(df.head(1))[2:]
 
 
-#Initializing the app
 app = Dash(__name__)
 
-#Appearance of the app
 app.layout = html.Div([
     # Store to keep dark mode state
     dcc.Store(id='dark-mode-store', data=False),
