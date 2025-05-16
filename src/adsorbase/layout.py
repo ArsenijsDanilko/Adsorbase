@@ -1,10 +1,29 @@
 from dash import html, dcc, dash_table
-import adsorbase.styles as st
 from math import floor, ceil
-import pandas as pd
 from adsorbase.utils import load_df, axis_options
+import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import ThemeSwitchAIO
 
 df = load_df()
+
+color_mode_switch = html.Span([
+    dbc.Label(className="fa fa-moon", html_for="color-mode-switch"),
+    dbc.Switch(
+        id="color-mode-switch",
+        value=False,
+        className="d-inline-block ms-1",
+        persistence=True
+    ),
+    dbc.Label(className="fa fa-sun", html_for="color-mode-switch"),
+])
+
+theme_switch = html.Div([
+    ThemeSwitchAIO(
+        aio_id="theme",
+        themes=[dbc.themes.COSMO, dbc.themes.DARKLY]
+    )],
+    style={"position": "absolute", "top": "20px", 'right': "20px"}
+)
 
 title = html.H1(
     children='Adsorbase',
@@ -12,7 +31,6 @@ title = html.H1(
     style={
         'textAlign': 'center',
         'fontSize': '4em',
-        'color': 'black',
         'letterSpacing': '3px',
         'marginTop': '5px'
     }
@@ -25,7 +43,6 @@ subtitle = html.H3(
         'textAlign': 'center',
         'fontSize': '1.8em',
         'fontStyle': 'italic',
-        'color': '#444',
         'letterSpacing': '1px'
     }
 )
@@ -35,7 +52,7 @@ x_dropdown = html.Div([
         {col: col for col in axis_options},
         'Pore volume [cm³/g]',
         id='xaxis-column',
-        style=st.dropdown_light
+        style={'color': 'black'}
     ),
 ], id='xaxis-container', style={'width': '48%', 'display': 'inline-block'}
 )
@@ -45,7 +62,7 @@ y_dropdown = html.Div([
         {col: col for col in axis_options},
         'BET Surface Area [m²/g]',
         id='yaxis-column',
-        style=st.dropdown_light
+        style={'color': 'black'}
     ),
 ], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'}
 )
@@ -105,14 +122,14 @@ input_fields = [
     dcc.Input(id='input-P', type='number', placeholder='Conditions P [bar]')
 ]
 
-add_button = html.Button(
+add_button = dbc.Button(
     'Add',
     id='submit-btn',
     n_clicks=0,
     style={'marginLeft': '10px'}
 )
 
-actualize_button = html.Button(
+actualize_button = dbc.Button(
     'Actualize graph',
     id='actualize-btn',
     n_clicks=0,
@@ -152,7 +169,7 @@ filtered_table = dcc.Loading(
     )
 )
 
-export_button = html.Button(
+export_button = dbc.Button(
     'Export Filtered Data',
     id='export-btn',
     n_clicks=0,
@@ -163,13 +180,9 @@ download = dcc.Download(id='download-dataframe-csv')
 
 
 full_layout = html.Div([
-    # Store to keep dark mode state
-    dcc.Store(id='dark-mode-store', data=False),
-
     title,
     subtitle,
-
-    html.Button('Activate Dark mode', id='toggle-darkmode'),
+    theme_switch,
 
     html.Div([
         x_dropdown,
@@ -200,4 +213,4 @@ full_layout = html.Div([
     filtered_table,
     export_button,
     download
-], id='main-div', style=st.light)
+], id='main-div')

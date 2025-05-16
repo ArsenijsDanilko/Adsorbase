@@ -3,8 +3,8 @@ from dash.exceptions import PreventUpdate
 import adsorbase.utils as utils
 import pandas as pd
 import os
-import adsorbase.styles as st
 import plotly.express as px
+from dash_bootstrap_templates import ThemeSwitchAIO, load_figure_template
 
 
 csv_file = utils.ROOT_PATH / 'data/adsorbents.csv'
@@ -12,18 +12,17 @@ df = utils.load_df()
 custom_path = utils.ROOT_PATH / 'data/custom.csv'
 data_options = utils.column_titles[2:]
 
+load_figure_template(["cosmo", "darkly"])
+
 
 def register_callbacks(app: Dash) -> None:
     # Function set to count the number of element on the graph
-    app.clientside_callback(
-        """
+    javascript_count = """
         function(restyleData, relayoutData, figure) {
         if (!figure || !figure.data) return "N/A";
-
         // Set the limit of the zoom
         let xRange = null;
         let yRange = null;
-
         if (relayoutData) {
             if ('xaxis.range[0]' in relayoutData && 'xaxis.range[1]' in relayoutData) {
                 xRange = [relayoutData['xaxis.range[0]'], relayoutData['xaxis.range[1]']];
@@ -36,7 +35,6 @@ def register_callbacks(app: Dash) -> None:
                 yRange = relayoutData['yaxis.range'];
             }
         }
-
         // Redefine the actual range before counting
         if ((!xRange || !yRange) && figure.layout) {
             if (!xRange && figure.layout.xaxis && figure.layout.xaxis.range) {
@@ -46,29 +44,27 @@ def register_callbacks(app: Dash) -> None:
                 yRange = figure.layout.yaxis.range;
             }
         }
-
         let totalElements = 0;
-
         for (let i = 0; i < figure.data.length; i++) {
             let trace = figure.data[i];
             let visible = trace.visible === undefined || trace.visible === true;
             if (!visible || !trace.x || !trace.y) continue;
-
             for (let j = 0; j < trace.x.length; j++) {
                 let x = trace.x[j];
                 let y = trace.y[j];
                 let inX = !xRange || (x >= xRange[0] && x <= xRange[1]);
                 let inY = !yRange || (y >= yRange[0] && y <= yRange[1]);
-
                 if (inX && inY) {
                     totalElements += 1;
                 }
             }
         }
-
         return "Selected points : " + totalElements;
         }   
-        """,
+        """
+    
+    app.clientside_callback(
+        javascript_count,
         Output("selected-number", "children"),
         [Input("indicator-graphic", "restyleData"), Input("indicator-graphic", "relayoutData"), Input("indicator-graphic", "figure"),
         Input("Temp-slider", "value"), Input("Pressure-slider", "value")]
@@ -102,12 +98,12 @@ def register_callbacks(app: Dash) -> None:
         Input('xaxis-column', 'value'),
         Input('yaxis-column', 'value'),
         Input('hover-dropdown', 'value'),
-        Input('dark-mode-store', 'data'),
         Input('Temp-slider', 'value'),
         Input('Pressure-slider', 'value'),
+        Input(ThemeSwitchAIO.ids.switch("theme"), "value"),
         Input('actualize-btn', 'n_clicks')
     )
-    def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range, n_clicks):
+    def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, t_range, p_range, theme, n_clicks):
         if not xaxis_column_name or not yaxis_column_name:
             raise PreventUpdate
 
@@ -123,7 +119,10 @@ def register_callbacks(app: Dash) -> None:
                 (filtered_df['Conditions P [bar]'] <= p_range[1])
             ]
 
-        # figure
+        # Choose Plotly template based on theme
+        plot_template = "cosmo" if theme else "darkly"
+
+        # Plot the figure
         fig = px.scatter(
             filtered_df,
             x=xaxis_column_name,
@@ -135,7 +134,7 @@ def register_callbacks(app: Dash) -> None:
             hover_name=filtered_df.columns[0],
             title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
             custom_data=list(df.head(1)),
-            template='seaborn'
+            template=plot_template
         )
 
         fig.update_layout(
@@ -164,82 +163,11 @@ def register_callbacks(app: Dash) -> None:
                     'sizeref': 10,
                     'size': 8}
         )
-
-        if is_dark_mode:
-            fig.update_layout(
-                transition_duration=1000,
-                paper_bgcolor='#2a2a2a',
-                plot_bgcolor='#2a2a2a',
-                font_color='white',
-                title_font_color='white',
-                xaxis=dict(gridcolor='#444', color='white'),
-                yaxis=dict(gridcolor='#444', color='white')
-            )
-
-        fig.update_layout(transition_duration=500)
+        
         return fig
 
 
-    # Callback to toggle dark mode
-    @app.callback(
-        Output('dark-mode-store', 'data'),
-        Input('toggle-darkmode', 'n_clicks'),
-        State('dark-mode-store', 'data')
-    )
-    def toggle_dark_mode(n_clicks, current_state):
-        if n_clicks is None:
-            raise PreventUpdate
-        return not current_state  # Toggle boolean
-
-
-    @app.callback(
-        Output('xaxis-column', 'style'),
-        Output('yaxis-column', 'style'),
-        Input('dark-mode-store', 'data')
-    )
-    def update_dropdown_styles(is_dark_mode):
-        return (st.dropdown_dark if is_dark_mode else st.dropdown_light,
-                st.dropdown_dark if is_dark_mode else st.dropdown_light)
-
-
-    @app.callback(
-        Output('toggle-darkmode', 'children'),
-        Input('dark-mode-store', 'data')
-    )
-    def update_toggle_label(is_dark_mode):
-        return 'Activate Light Mode' if is_dark_mode else 'Activate Dark Mode'
-
-    # Callback to update styles
-
-
-    @app.callback(
-        Output('main-div', 'style'),
-        Output('title', 'style'),
-        Output('subtitle', 'style'),
-        Input('dark-mode-store', 'data')
-    )
-    def update_styles(is_dark_mode):
-        style = st.dark if is_dark_mode else st.light
-        # Title remains styled regardless of theme
-        title_style = {
-            'textAlign': 'center',
-            'fontSize': '4em',
-            'color': 'white' if is_dark_mode else 'black',
-            'letterSpacing': '3px',
-            'marginTop': '5px'
-        }
-        subtitle_style = {
-            'textAlign': 'center',
-            'fontSize': '1.8em',
-            'fontStyle': 'italic',
-            'color': 'white' if is_dark_mode else '#444',
-            'letterSpacing': '1px'
-        }
-        return style, title_style, subtitle_style
-
     # Callback to connect the table to the filters
-
-
     @app.callback(
         Output('adsorbents-table', 'data'),
         Input('Temp-slider', 'value'),
