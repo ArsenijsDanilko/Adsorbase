@@ -5,18 +5,35 @@ from dash.exceptions import PreventUpdate
 import pandas as pd
 import os
 import adsorbase.styles as st
-from adsorbase.layout import full_layout
 import adsorbase.utils as utils
+import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import load_figure_template, ThemeSwitchAIO
+
 
 csv_file = utils.ROOT_PATH / 'data/adsorbents.csv'
 df = utils.load_df()
 custom_path = utils.ROOT_PATH / 'data/custom.csv'
 data_options = utils.column_titles[2:]
 
-app = Dash(__name__)
+app = Dash(external_stylesheets=[dbc.themes.COSMO])
+
+from adsorbase.layout import full_layout
+
+load_figure_template(["cosmo", "darkly"])
 
 app.layout = full_layout
 
+# theme_switch = ThemeSwitchAIO(
+#     aio_id="theme", themes=[dbc.themes.COSMO, dbc.themes.DARKLY]
+# )
+
+color_mode_switch =  html.Span(
+    [
+        dbc.Label(className="fa fa-moon", html_for="color-mode-switch"),
+        dbc.Switch( id="color-mode-switch", value=False, className="d-inline-block ms-1", persistence=True),
+        dbc.Label(className="fa fa-sun", html_for="color-mode-switch"),
+    ]
+)
 
 # Function set to count the number of element on the graph
 app.clientside_callback(
@@ -103,15 +120,15 @@ def current_data() -> pd.DataFrame:
 # Callback to update graph
 @app.callback(
     Output('indicator-graphic', 'figure'),
+    Input(ThemeSwitchAIO.ids.switch("theme"), "value"),
     Input('xaxis-column', 'value'),
     Input('yaxis-column', 'value'),
     Input('hover-dropdown', 'value'),
-    Input('dark-mode-store', 'data'),
     Input('Temp-slider', 'value'),
     Input('Pressure-slider', 'value'),
     Input('actualize-btn', 'n_clicks')
 )
-def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_dark_mode, t_range, p_range, n_clicks):
+def update_graph(theme, xaxis_column_name, yaxis_column_name, selected_hover_data, t_range, p_range, n_clicks):
     if not xaxis_column_name or not yaxis_column_name:
         raise PreventUpdate
 
@@ -127,6 +144,8 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
             (filtered_df['Conditions P [bar]'] <= p_range[1])
         ]
 
+    # Choose Plotly template based on theme
+    template = "cosmo" if theme else "darkly"
     # figure
     fig = px.scatter(
         filtered_df,
@@ -139,7 +158,7 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
         hover_name=filtered_df.columns[0],
         title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
         custom_data=list(df.head(1)),
-        template='seaborn'
+        template=template
     )
 
     fig.update_layout(
@@ -168,81 +187,9 @@ def update_graph(xaxis_column_name, yaxis_column_name, selected_hover_data, is_d
                 'sizeref': 10,
                 'size': 8}
     )
-
-    if is_dark_mode:
-        fig.update_layout(
-            transition_duration=1000,
-            paper_bgcolor='#2a2a2a',
-            plot_bgcolor='#2a2a2a',
-            font_color='white',
-            title_font_color='white',
-            xaxis=dict(gridcolor='#444', color='white'),
-            yaxis=dict(gridcolor='#444', color='white')
-        )
-
-    fig.update_layout(transition_duration=500)
     return fig
 
-
-# Callback to toggle dark mode
-@app.callback(
-    Output('dark-mode-store', 'data'),
-    Input('toggle-darkmode', 'n_clicks'),
-    State('dark-mode-store', 'data')
-)
-def toggle_dark_mode(n_clicks, current_state):
-    if n_clicks is None:
-        raise PreventUpdate
-    return not current_state  # Toggle boolean
-
-
-@app.callback(
-    Output('xaxis-column', 'style'),
-    Output('yaxis-column', 'style'),
-    Input('dark-mode-store', 'data')
-)
-def update_dropdown_styles(is_dark_mode):
-    return (st.dropdown_dark if is_dark_mode else st.dropdown_light,
-            st.dropdown_dark if is_dark_mode else st.dropdown_light)
-
-
-@app.callback(
-    Output('toggle-darkmode', 'children'),
-    Input('dark-mode-store', 'data')
-)
-def update_toggle_label(is_dark_mode):
-    return 'Activate Light Mode' if is_dark_mode else 'Activate Dark Mode'
-
-# Callback to update styles
-
-
-@app.callback(
-    Output('main-div', 'style'),
-    Output('title', 'style'),
-    Output('subtitle', 'style'),
-    Input('dark-mode-store', 'data')
-)
-def update_styles(is_dark_mode):
-    style = st.dark if is_dark_mode else st.light
-    # Title remains styled regardless of theme
-    title_style = {
-        'textAlign': 'center',
-        'fontSize': '4em',
-        'color': 'white' if is_dark_mode else 'black',
-        'letterSpacing': '3px',
-        'marginTop': '5px'
-    }
-    subtitle_style = {
-        'textAlign': 'center',
-        'fontSize': '1.8em',
-        'fontStyle': 'italic',
-        'color': 'white' if is_dark_mode else '#444',
-        'letterSpacing': '1px'
-    }
-    return style, title_style, subtitle_style
-
 # Callback to connect the table to the filters
-
 
 @app.callback(
     Output('adsorbents-table', 'data'),
