@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT_PATH = Path(__file__).resolve().parents[2]
 
 column_titles = []
+
 with open(ROOT_PATH/'data/adsorbents.csv', 'r', encoding='utf-8') as database:
     header = database.read().splitlines()[0]
     column_titles = header.split(',')
