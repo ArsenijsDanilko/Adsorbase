@@ -2,7 +2,8 @@
 
 env.yml
 .copier-answers.yml
-custom.csv
+**/custom.csv
+**/.vscode
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,windows,macos
