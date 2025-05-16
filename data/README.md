@@ -1,3 +1,3 @@
 # Data 
 
-Folder to place your data. 
+Here you can find our csv file with the adsorbents. 
