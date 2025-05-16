@@ -93,14 +93,20 @@ hover_dropdown = html.Div([
     html.Label('Select hover data:'),
     dcc.Dropdown(
         id='hover-dropdown',
-        options=[{'label': col, 'value': col}
-                 for col in axis_options],
+        options=[{'label': col, 'value': col} for col in axis_options],
         value=[],
         multi=True,
-        style={'color': 'black'}
-    ),
-]
-)
+        style={
+            'width': '100%',         
+            'color': 'black',
+            'justify-content': 'center',
+            'marginLeft' : '5px'          
+        }
+    )
+], style={
+    'width': '60%',                 
+    'display': 'inline-block'       
+})
 
 graph = dcc.Graph(id='indicator-graphic')
 shown_count = html.Div(
