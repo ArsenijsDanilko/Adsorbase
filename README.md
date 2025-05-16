@@ -1,6 +1,6 @@
 # 🧪 Adsorbase - Adsorbent Visualization & Management App
 
-Welcome to Adsorbase !
+Welcome to Adsorbase !  
 Adsorbase is a Dash-based interactive web application for visualizing, filtering, and managing a database of adsorbents based on various physical and experimental parameters. The app includes support for light/dark mode, dynamic graphs, and data export functionality.
 
 ---
@@ -21,22 +21,23 @@ Adsorbase is a Dash-based interactive web application for visualizing, filtering
 Make sure to install the required libraries using:
 
 ```bash
-pip install dash pandas plotly
+pip install dash_bootstrap_components dash_bootstrap_templates dash pandas plotly
 ```
 
 ---
 
 ## 📌 How to Run
 
-1. Run the app 
+1. Run the app
 
-```bash
-python app.py
-```
+    ```bash
+    python app.py
+    ```
 
-2. Open your browser and navigate to `http://127.0.0.1:8050/`.
+1. Open your browser and navigate to `http://127.0.0.1:8050/`.
 
 ---
+
 ## 🔧 Adding New Adsorbents
 
 Users can add new adsorbents via the input form:
@@ -69,4 +70,4 @@ Click the **"Export Filtered Data"** button to download the current filtered dat
 
 - Custom entries persist between sessions via `custom.csv`.
 - Scatter plot supports dynamic zooming, with live feedback on how many points are visible.
-- Hover data can be customized using the dropdown.
+- Hover data can be customized using the dropdown menu above the figure.
