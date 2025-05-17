@@ -112,7 +112,7 @@ def register_callbacks(app: Dash) -> None:
         
         return fig 
 
-    
+    # Callback to count the number of visible points on the graph 
     @app.callback(
         Output('point-count', 'children'),
         Input('indicator-graphic', 'relayoutData'),
@@ -177,7 +177,6 @@ def register_callbacks(app: Dash) -> None:
                         count += 1
 
         return f"Number of visible points : {count}"
-
 
     # Callback to connect the table to the filters
     @app.callback(
