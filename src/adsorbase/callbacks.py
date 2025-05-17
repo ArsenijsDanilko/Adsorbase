@@ -16,61 +16,7 @@ load_figure_template(["cosmo", "darkly"])
 
 
 def register_callbacks(app: Dash) -> None:
-    # Function set to count the number of element on the graph
-    javascript_count = """
-        function(restyleData, relayoutData, figure) {
-        if (!figure || !figure.data) return "N/A";
-        // Set the limit of the zoom
-        let xRange = null;
-        let yRange = null;
-        if (relayoutData) {
-            if ('xaxis.range[0]' in relayoutData && 'xaxis.range[1]' in relayoutData) {
-                xRange = [relayoutData['xaxis.range[0]'], relayoutData['xaxis.range[1]']];
-            } else if ('xaxis.range' in relayoutData) {
-                xRange = relayoutData['xaxis.range'];
-            }
-            if ('yaxis.range[0]' in relayoutData && 'yaxis.range[1]' in relayoutData) {
-                yRange = [relayoutData['yaxis.range[0]'], relayoutData['yaxis.range[1]']];
-            } else if ('yaxis.range' in relayoutData) {
-                yRange = relayoutData['yaxis.range'];
-            }
-        }
-        // Redefine the actual range before counting
-        if ((!xRange || !yRange) && figure.layout) {
-            if (!xRange && figure.layout.xaxis && figure.layout.xaxis.range) {
-                xRange = figure.layout.xaxis.range;
-            }
-            if (!yRange && figure.layout.yaxis && figure.layout.yaxis.range) {
-                yRange = figure.layout.yaxis.range;
-            }
-        }
-        let totalElements = 0;
-        for (let i = 0; i < figure.data.length; i++) {
-            let trace = figure.data[i];
-            let visible = trace.visible === undefined || trace.visible === true;
-            if (!visible || !trace.x || !trace.y) continue;
-            for (let j = 0; j < trace.x.length; j++) {
-                let x = trace.x[j];
-                let y = trace.y[j];
-                let inX = !xRange || (x >= xRange[0] && x <= xRange[1]);
-                let inY = !yRange || (y >= yRange[0] && y <= yRange[1]);
-                if (inX && inY) {
-                    totalElements += 1;
-                }
-            }
-        }
-        return "Selected points : " + totalElements;
-        }   
-        """
     
-    app.clientside_callback(
-        javascript_count,
-        Output("selected-number", "children"),
-        [Input("indicator-graphic", "restyleData"), Input("indicator-graphic", "relayoutData"), Input("indicator-graphic", "figure"),
-        Input("Temp-slider", "value"), Input("Pressure-slider", "value")]
-    )
-
-
     # Callback to update hover dropdown options
     @app.callback(
         Output('hover-dropdown', 'options'),
@@ -164,8 +110,127 @@ def register_callbacks(app: Dash) -> None:
                     'size': 8}
         )
         
-        return fig
+        return fig 
 
+    
+    @app.callback(
+        Output('point-count', 'children'),
+        Input('indicator-graphic', 'relayoutData'),
+        Input('indicator-graphic', 'restyleData'),
+        Input('indicator-graphic', 'figure'),
+        Input("Temp-slider","value"),
+        Input("Pressure-slider","value"),
+    )
+    def count_visible_points(relayout_data, restyle_data, figure, TempSlider, PressSlider):
+        visible_traces = []
+
+        # Identifier les traces visibles
+        if restyle_data and 'visible' in str(restyle_data):
+            for i, trace in enumerate(figure['data']):
+                if trace.get('visible', True) not in [False, 'legendonly']:
+                    visible_traces.append(i)
+        else:
+            # Toutes visibles par défaut
+            visible_traces = list(range(len(figure['data'])))
+
+        # Extraire les limites de zoom
+        x0 = y0 = x1 = y1 = None
+        if relayout_data and 'xaxis.range[0]' in relayout_data:
+            x0 = relayout_data['xaxis.range[0]']
+            x1 = relayout_data['xaxis.range[1]']
+            y0 = relayout_data['yaxis.range[0]']
+            y1 = relayout_data['yaxis.range[1]']
+
+        if x0 is None : 
+            x0 = -float('inf')
+        if y0 is None : 
+            y0 = -float('inf')
+        if x1 is None : 
+            x1 = float('inf')
+        if y1 is None : 
+            y1 = float('inf')
+
+        count = 0
+        for i in visible_traces:
+            x_points = []
+            y_points = []
+        
+            trace = figure['data'][i]
+
+            x_vals = trace['x'].get('_inputArray')
+            if x_vals : 
+                for k,v in x_vals.items() : 
+                    if k.isdigit() : 
+                        x_points.append(v)
+                    
+            y_vals = trace['y'].get('_inputArray')
+            if y_vals :
+                for k,v in y_vals.items() : 
+                    if k.isdigit():
+                        y_points.append(v)
+
+            for x, y in zip(x_points, y_points):
+                if x0 and x1 and y0 and y1 and x and y:
+                    if (x0 <= x <= x1) and (y0 <= y <= y1):
+                        count += 1
+                # else : 
+                #     count +=1
+
+        return f"Nombre de points visibles : {count}"
+
+
+    # javascript_count = """
+    #     function(restyleData, relayoutData, figure) {
+    #     if (!figure || !figure.data) return "N/A";
+    #     // Set the limit of the zoom
+    #     let xRange = null;
+    #     let yRange = null;
+    #     if (relayoutData) {
+    #         if ('xaxis.range[0]' in relayoutData && 'xaxis.range[1]' in relayoutData) {
+    #             xRange = [relayoutData['xaxis.range[0]'], relayoutData['xaxis.range[1]']];
+    #         } else if ('xaxis.range' in relayoutData) {
+    #             xRange = relayoutData['xaxis.range'];
+    #         }
+    #         if ('yaxis.range[0]' in relayoutData && 'yaxis.range[1]' in relayoutData) {
+    #             yRange = [relayoutData['yaxis.range[0]'], relayoutData['yaxis.range[1]']];
+    #         } else if ('yaxis.range' in relayoutData) {
+    #             yRange = relayoutData['yaxis.range'];
+    #         }
+    #     }
+    #     // Redefine the actual range before counting
+    #     if ((!xRange || !yRange) && figure.layout) {
+    #         if (!xRange && figure.layout.xaxis && figure.layout.xaxis.range) {
+    #             xRange = figure.layout.xaxis.range;
+    #         }
+    #         if (!yRange && figure.layout.yaxis && figure.layout.yaxis.range) {
+    #             yRange = figure.layout.yaxis.range;
+    #         }
+    #     }
+    #     let totalElements = 0;
+    #     for (let i = 0; i < figure.data.length; i++) {
+    #         let trace = figure.data[i];
+    #         let visible = trace.visible === undefined || trace.visible === true;
+    #         if (!visible || !trace.x || !trace.y) continue;
+    #         for (let j = 0; j < trace.x.length; j++) {
+    #             let x = trace.x[j];
+    #             let y = trace.y[j];
+    #             let inX = !xRange || (x >= xRange[0] && x <= xRange[1]);
+    #             let inY = !yRange || (y >= yRange[0] && y <= yRange[1]);
+    #             if (inX && inY) {
+    #                 totalElements += 1;
+    #             }
+    #         }
+    #     }
+    #     return "Selected points : " + totalElements;
+    #     }   
+    #     """
+    
+    # app.clientside_callback(
+    #     javascript_count,
+    #     Output("selected-number", "children"),
+    #     [Input("indicator-graphic", "restyleData"), Input("indicator-graphic", "relayoutData"), Input("indicator-graphic", "figure"),
+    #     Input("Temp-slider", "value"), Input("Pressure-slider", "value")]
+    # )
 
     # Callback to connect the table to the filters
     @app.callback(
