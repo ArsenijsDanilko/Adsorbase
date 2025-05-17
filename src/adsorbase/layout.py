@@ -43,7 +43,8 @@ subtitle = html.H3(
         'textAlign': 'center',
         'fontSize': '1.8em',
         'fontStyle': 'italic',
-        'letterSpacing': '1px'
+        'letterSpacing': '1px',
+        'marginBottom' : '20px'  
     }
 )
 
@@ -54,7 +55,14 @@ x_dropdown = html.Div([
         id='xaxis-column',
         style={'color': 'black'}
     ),
-], id='xaxis-container', style={'width': '48%', 'display': 'inline-block'}
+], 
+    id='xaxis-container', 
+    style={'width': '48%', 
+           'display': 'inline-block',
+           'marginBottom' : '20px',
+           'marginTop' : '20px',
+           'marginLeft' : '20px'  
+        }
 )
 
 y_dropdown = html.Div([
@@ -64,10 +72,18 @@ y_dropdown = html.Div([
         id='yaxis-column',
         style={'color': 'black'}
     ),
-], id='yaxis-container', style={'width': '48%', 'float': 'right', 'display': 'inline-block'}
+], 
+    id='yaxis-container', 
+    style={'width': '48%', 
+           'display': 'inline-block',
+           'marginBottom' : '20px',
+           'marginTop' : '20px',
+           'marginLeft' : '20px'  
+        }
 )
 
-temp_slider_text = html.Label('Select the right temperature conditions [K]')
+temp_slider_text = html.Label('Select the right temperature conditions [K]',
+                              style= {'marginLeft' : '20px'})
 temp_slider = dcc.RangeSlider(
     floor(df['Conditions T [K]'].min()/10)*10,
     ceil(df['Conditions T [K]'].max()/10)*10,
@@ -78,7 +94,9 @@ temp_slider = dcc.RangeSlider(
     id='Temp-slider'
 )
 
-pressure_slider_text = html.Label('Select the right pressure conditions [bar]')
+pressure_slider_text = html.Label('Select the right pressure conditions [bar]',
+                                  style= {'marginLeft' : '20px',
+                                          'marginTop' : '5px'})
 pressure_slider = dcc.RangeSlider(
     floor(df['Conditions P [bar]'].min()),
     ceil(df['Conditions P [bar]'].max()),
@@ -105,19 +123,27 @@ hover_dropdown = html.Div([
     )
 ], style={
     'width': '60%',                 
-    'display': 'inline-block'       
+    'display': 'inline-block' ,
+    'marginBottom' : '20px',
+    'marginTop' : '20px',
+    'marginLeft' : '20px'   
 })
 
 graph = dcc.Graph(id='indicator-graphic')
 shown_count = html.Div(
     id='point-count',
-    style={'marginBottom': '20px', 'fontWeight': 'bold'}
+    style={'marginBottom': '20px', 
+           'marginTop' : '20px', 
+           'marginLeft' : '20px',
+           'fontWeight': 'bold'}
 )
 
-input_title = html.H3('Extending the database')
-input_prompt = html.P('Note: use periods as decimal separators, not commas')
+input_title = html.H3('Extending the database',
+                      style={'marginLeft' : '20px'})
+input_prompt = html.P('Note: use periods as decimal separators, not commas',
+                      style={'marginLeft' : '20px'})
 input_fields = [
-    dcc.Input(id='input-name', type='text', placeholder='Name'),
+    dcc.Input(id='input-name', type='text', placeholder='Name', style={'marginLeft' : '20px'}),
     dcc.Input(id='input-type', type='text', placeholder='Type of adsorbent'),
     dcc.Input(id='input-BET', type='number', placeholder='BET Surface Area'),
     dcc.Input(id='input-Pore', type='number',
@@ -179,7 +205,8 @@ export_button = dbc.Button(
     'Export Filtered Data',
     id='export-btn',
     n_clicks=0,
-    style={'marginTop': '20px'}
+    style={'marginTop': '20px',
+           'marginLeft' : '20px'}
 )
 
 download = dcc.Download(id='download-dataframe-csv')
