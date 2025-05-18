@@ -180,7 +180,8 @@ filtered_table = dcc.Loading(
     type='default',
     children=dash_table.DataTable(
         id='adsorbents-table',
-        columns=[{'name': col, 'id': col} for col in df.columns],
+        columns=[{"name": i, "id": i} for i in df.head(1)],
+        data=[],
         style_table={'overflowX': 'auto'},
         style_cell={
             'textAlign': 'center',

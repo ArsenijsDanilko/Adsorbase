@@ -181,20 +181,81 @@ def register_callbacks(app: Dash) -> None:
     # Callback to connect the table to the filters
     @app.callback(
         Output('adsorbents-table', 'data'),
-        Input('Temp-slider', 'value'),
-        Input('Pressure-slider', 'value')
+        Input('indicator-graphic', 'relayoutData'),
+        Input('indicator-graphic', 'restyleData'),
+        Input('indicator-graphic', 'figure'),
+        Input("Temp-slider","value"),
+        Input("Pressure-slider","value")
     )
-    def update_table(t_range, p_range):
-        if (t_range is None) or (p_range is None):
-            raise PreventUpdate
+    def update_table(relayout_data, restyle_data, figure, t_range, p_range):
+        visible_traces = []
 
-        filtered_df = df[
-            (df['Conditions T [K]'] >= t_range[0]) & (df['Conditions T [K]'] <= t_range[1]) &
-            (df['Conditions P [bar]'] >= p_range[0]) & (
-                df['Conditions P [bar]'] <= p_range[1])
-        ]
+        # Identify the visible traces 
+        if restyle_data and 'visible' in str(restyle_data):
+            for i, trace in enumerate(figure['data']):
+                if trace.get('visible', True) not in [False, 'legendonly']:
+                    visible_traces.append(i)
+        else:
+            # All the visible trace by default 
+            visible_traces = list(range(len(figure['data'])))
 
-        return filtered_df.to_dict('records')
+        # Extract the limits of the zoom
+        x0 = y0 = x1 = y1 = None
+        if relayout_data and 'xaxis.range[0]' in relayout_data:
+            x0 = relayout_data['xaxis.range[0]']
+            x1 = relayout_data['xaxis.range[1]']
+            y0 = relayout_data['yaxis.range[0]']
+            y1 = relayout_data['yaxis.range[1]']
+
+        # Set the limits if not zooming
+        if x0 is None : 
+            x0 = -float('inf')
+        if y0 is None : 
+            y0 = -float('inf')
+        if x1 is None : 
+            x1 = float('inf')
+        if y1 is None : 
+            y1 = float('inf')
+
+        # Extract to data
+        column_names = df.head(1)
+        filtered_data = []
+        
+        for i in visible_traces:
+            x_points = []
+            y_points = []
+        
+            trace = figure['data'][i]
+
+            x_vals = trace['x'].get('_inputArray')
+            if x_vals : 
+                for k,v in x_vals.items() : 
+                    if k.isdigit() : 
+                        x_points.append(v)
+                    
+            y_vals = trace['y'].get('_inputArray')
+            if y_vals :
+                for k,v in y_vals.items() : 
+                    if k.isdigit():
+                        y_points.append(v)
+
+            custom_data = trace.get('customdata', [])
+
+            for x, y, custom in zip(x_points, y_points, custom_data):
+                if x0 and x1 and y0 and y1 and x and y:
+                    if (x0 <= x <= x1) and (y0 <= y <= y1) :
+                        row = dict(zip(column_names, custom))
+                        filtered_data.append(row)
+
+        return filtered_data
+
+        # filtered_df = df[
+        #     (df['Conditions T [K]'] >= t_range[0]) & (df['Conditions T [K]'] <= t_range[1]) &
+        #     (df['Conditions P [bar]'] >= p_range[0]) & (
+        #         df['Conditions P [bar]'] <= p_range[1])
+        # ]
+
+        # return filtered_df.to_dict('records')
 
 
     def insert_into_csv(name, type, BET, Pore, Ads, T, P):
