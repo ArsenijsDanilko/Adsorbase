@@ -20,7 +20,7 @@ color_mode_switch = html.Span([
 theme_switch = html.Div([
     ThemeSwitchAIO(
         aio_id="theme",
-        themes=[dbc.themes.COSMO, dbc.themes.DARKLY]
+        themes=[dbc.themes.BOOTSTRAP, dbc.themes.DARKLY]
     )],
     style={"position": "absolute", "top": "20px", 'right': "20px"}
 )
