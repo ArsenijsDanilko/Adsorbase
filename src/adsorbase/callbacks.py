@@ -113,7 +113,7 @@ def register_callbacks(app: Dash) -> None:
         return fig
 
     def get_traces(relayout_data, restyle_data, figure) -> tuple[list, float, float, float, float]:
-        """Get all series on the plotly scatter, as well as the zoom limits"""
+        """Get all series on the plotly scatter, as well as the zoom limits (`x_min`, `x_max`, `y_min`, `y_max`)"""
         visible_traces = []
 
         # Identify the visible traces
@@ -143,7 +143,7 @@ def register_callbacks(app: Dash) -> None:
         if y_max is None:
             y_max = float('inf')
 
-        return (visible_traces, y_max, x_max, y_min, x_min)
+        return (visible_traces, x_min, x_max, y_min, y_max)
 
     # Callback to count the number of visible points on the graph
     @app.callback(
@@ -156,7 +156,7 @@ def register_callbacks(app: Dash) -> None:
     )
     def count_visible_points(relayout_data, restyle_data, figure, t_range, p_range):
 
-        visible_traces, y_max, x_max, y_min, x_min = get_traces(
+        visible_traces, x_min, x_max, y_min, y_max = get_traces(
             relayout_data, restyle_data, figure)
 
         # Count the visible traces on the graph
@@ -199,7 +199,7 @@ def register_callbacks(app: Dash) -> None:
     )
     def update_table(relayout_data, restyle_data, figure, t_range, p_range, theme):
 
-        visible_traces, y_max, x_max, y_min, x_min = get_traces(
+        visible_traces, x_min, x_max, y_min, y_max = get_traces(
             relayout_data, restyle_data, figure)
 
         # Extract to data
