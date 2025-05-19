@@ -79,7 +79,8 @@ def register_callbacks(app: Dash) -> None:
             hover_name=filtered_df.columns[0],
             title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
             custom_data=list(df.head(1)),
-            template=plot_template
+            template=plot_template,
+            color_discrete_sequence=px.colors.qualitative.Vivid
         )
 
         fig.update_layout(
