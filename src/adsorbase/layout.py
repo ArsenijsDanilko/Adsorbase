@@ -177,31 +177,37 @@ filtered_table_title = html.H3(
 )
 
 filtered_table = dcc.Loading(
-    id='loading-table',
+    id='adsorbents-table',
     type='default',
-    children=dash_table.DataTable(
-        id='adsorbents-table',
-        columns=[{"name": i, "id": i} for i in df.head(1)],
-        data=[],
-        style_table={'overflowX': 'auto'},
-        style_cell={
-            'textAlign': 'center',
-            'minWidth': '100px',
-            'maxWidth': '200px',
-            'whiteSpace': 'normal',
-        },
-        style_header={
-            'backgroundColor': 'rgb(255, 255, 255)',
-            'fontWeight': 'bold',
-            'color': 'black'
-        },
-        style_data={
-            'backgroundColor': 'rgb(255, 255, 255)',
-            'color': 'black'
-        },
-        page_size=10
-    )
+    children=[]
 )
+
+# filtered_table = dcc.Loading(
+#     id='loading-table',
+#     type='default',
+#     children=dash_table.DataTable(
+#         id='adsorbents-table',
+#         columns=[{"name": i, "id": i} for i in df.head(1)],
+#         data=[],
+#         style_table={'overflowX': 'auto'},
+#         style_cell={
+#             'textAlign': 'center',
+#             'minWidth': '100px',
+#             'maxWidth': '200px',
+#             'whiteSpace': 'normal',
+#         },
+#         style_header={
+#             'backgroundColor': 'rgb(255, 255, 255)',
+#             'fontWeight': 'bold',
+#             'color': 'black'
+#         },
+#         style_data={
+#             'backgroundColor': 'rgb(255, 255, 255)',
+#             'color': 'black'
+#         },
+#         page_size=10
+#     )
+# )
 
 export_button = dbc.Button(
     'Export Filtered Data',

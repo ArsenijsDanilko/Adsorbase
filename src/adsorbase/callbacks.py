@@ -1,4 +1,4 @@
-from dash import Dash, Input, Output, State, html, dcc
+from dash import Dash, Input, Output, State, html, dcc, dash_table
 from dash.exceptions import PreventUpdate
 import adsorbase.utils as utils
 import pandas as pd
@@ -66,7 +66,7 @@ def register_callbacks(app: Dash) -> None:
             ]
 
         # Choose Plotly template based on theme
-        plot_template = 'cosmo' if theme else 'darkly'
+        plot_template = 'bootstrap' if theme else 'darkly'
 
         # Plot the figure
         fig = px.scatter(
@@ -188,14 +188,15 @@ def register_callbacks(app: Dash) -> None:
 
     # Callback to connect the table to the filters
     @app.callback(
-        Output('adsorbents-table', 'data'),
+        Output('adsorbents-table', 'children'),
         Input('indicator-graphic', 'relayoutData'),
         Input('indicator-graphic', 'restyleData'),
         Input('indicator-graphic', 'figure'),
         Input('Temp-slider', 'value'),
-        Input('Pressure-slider', 'value')
+        Input('Pressure-slider', 'value'),
+        Input(ThemeSwitchAIO.ids.switch('theme'), 'value')
     )
-    def update_table(relayout_data, restyle_data, figure, t_range, p_range):
+    def update_table(relayout_data, restyle_data, figure, t_range, p_range, theme):
 
         visible_traces, y_max, x_max, y_min, x_min = get_traces(
             relayout_data, restyle_data, figure)
@@ -230,7 +231,32 @@ def register_callbacks(app: Dash) -> None:
                         row = dict(zip(column_names, custom))
                         filtered_data.append(row)
 
-        return filtered_data
+            dark = not theme 
+
+            children=dash_table.DataTable(
+                columns = [{"name": col, "id": col} for col in df.columns],
+                data=filtered_data,
+                style_table={"overflowX": "auto"},
+                style_header={
+                    "backgroundColor": "#1a252f" if dark else "#e1e5ec",
+                    "color": "white" if dark else "black"
+                },
+                style_cell={
+                    "backgroundColor": "#2b2b2b" if dark else "white",
+                    "color": "white" if dark else "black",
+                    "textAlign": "left",
+                    "padding": "5px",
+                },
+                style_data_conditional=[
+                    {
+                        "if": {"row_index": "odd"},
+                        "backgroundColor": "#34495e" if dark else "#f9f9f9"
+                    }
+                ],
+                page_size=10
+            )
+
+        return children
 
     def insert_into_csv(name, type, BET, Pore, Ads, T, P):
         new_data = pd.DataFrame(
