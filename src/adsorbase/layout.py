@@ -129,7 +129,8 @@ hover_dropdown = html.Div([
     'marginLeft' : '20px'   
 })
 
-graph = dcc.Graph(id='indicator-graphic')
+graph = dcc.Graph(id='indicator-graphic',
+                  style={'height':'90vh'})
 shown_count = html.Div(
     id='point-count',
     style={'marginBottom': '20px', 
