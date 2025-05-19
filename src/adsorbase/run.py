@@ -1,4 +1,7 @@
 from adsorbase.app import app
 
-if __name__ == "__main__":
+def launch():
     app.run(debug=True)
+
+if __name__ == "__main__":
+    launch()
