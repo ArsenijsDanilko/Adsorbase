@@ -144,7 +144,7 @@ input_title = html.H3('Extending the database',
 input_prompt = html.P('Note: use periods as decimal separators, not commas',
                       style={'marginLeft' : '20px'})
 input_fields = [
-    dcc.Input(id='input-name', type='text', placeholder='Name', style={'marginLeft' : '10%'}),
+    dcc.Input(id='input-name', type='text', placeholder='Name', style={'marginLeft' : '20px'}),
     dcc.Input(id='input-type', type='text', placeholder='Type of adsorbent'),
     dcc.Input(id='input-BET', type='number', placeholder='BET Surface Area'),
     dcc.Input(id='input-Pore', type='number',
