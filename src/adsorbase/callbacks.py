@@ -2,6 +2,7 @@ from dash import Dash, Input, Output, State, html, dcc, dash_table
 from dash.exceptions import PreventUpdate
 import adsorbase.utils as utils
 import pandas as pd
+from numpy import nan
 import os
 import plotly.express as px
 from dash_bootstrap_templates import ThemeSwitchAIO, load_figure_template
@@ -113,21 +114,6 @@ def register_callbacks(app: Dash) -> None:
 
         return fig
 
-    @app.callback(
-        [
-            Output('input-name', 'value'),
-            Output('input-type', 'value'),
-            Output('input-BET', 'value'),
-            Output('input-Pore', 'value'),
-            Output('input-Ads', 'value'),
-            Output('input-T', 'value'),
-            Output('input-P', 'value')
-        ],
-
-        Input('submit-btn', 'n_clicks')
-    )
-    def clear_fields(n_clicks):
-        return ['', ''] + [None for i in range(5)]
 
     def get_traces(relayout_data, restyle_data, figure) -> tuple[list, float, float, float, float]:
         """Get all series on the plotly scatter, as well as the zoom limits (`x_min`, `x_max`, `y_min`, `y_max`)"""
@@ -171,7 +157,7 @@ def register_callbacks(app: Dash) -> None:
         Input('Temp-slider', 'value'),
         Input('Pressure-slider', 'value'),
     )
-    def count_visible_points(relayout_data, restyle_data, figure, t_range, p_range):
+    def count_visible_points(relayout_data, restyle_data, figure, t_range, p_range) -> str:
 
         visible_traces, x_min, x_max, y_min, y_max = get_traces(
             relayout_data, restyle_data, figure)
@@ -276,14 +262,35 @@ def register_callbacks(app: Dash) -> None:
 
         return children
 
-    def insert_into_csv(name, type, BET, Pore, Ads, T, P):
+    def insert_into_csv(name, ads_type, BET, Pore, Ads, T, P) -> None:
+        num_data = [BET, Pore, Ads, T, P]
+
+        num_data = [nan if x is None else x for x in num_data]
+
         new_data = pd.DataFrame(
-            [[name, type, BET, Pore, Ads, T, P]],
+            [[name, ads_type] + num_data],
             columns=list(df.head(1))
         )
 
         updated = pd.concat([current_data(), new_data], ignore_index=True)
         updated.to_csv(custom_path, index=False)
+
+    def check_inputs(name, ads_type, BET, Pore, Ads, T, P) -> tuple[bool, html.Span | None]:
+        insert = False
+        span = None
+        if '' in (name, ads_type):
+            span = html.Span('Error : Please enter a name and type', style={'color': 'red'})
+
+        if (BET, Pore, Ads).count(None) >= 2:
+            span = html.Span('Error : Please enter at least two of the fields' +
+                '"BET surface area",' +
+                '"Pore Volume" and "Adsorption capacity"',
+                style={'color': 'red'})
+        else:
+            insert = True
+            span = html.Div(f'Added : {name}, {ads_type}, {BET}, {Pore}, {Ads}, {T}, {P}')
+
+        return (insert, span)
 
     @app.callback(
         Output('output', 'children'),
@@ -294,15 +301,34 @@ def register_callbacks(app: Dash) -> None:
         State('input-Pore', 'value'),
         State('input-Ads', 'value'),
         State('input-T', 'value'),
-        State('input-P', 'value'),
+        State('input-P', 'value')
     )
-    def update_output(n_clicks, name, type, BET, Pore, Ads, T, P):
-        if n_clicks > 0:
-            if None in (name, type, BET, Pore, Ads, T, P):
-                return html.Span('Error : Please complete each data.', style={'color': 'red'})
-            else:
-                insert_into_csv(name, type, BET, Pore, Ads, T, P),
-                return f'Added : {name}, {type}, {BET}, {Pore}, {Ads}, {T}, {P}'
+    def update_output(n_clicks, name, ads_type, BET, Pore, Ads, T, P):
+
+        if n_clicks:
+            insert, span = check_inputs(name, ads_type, BET, Pore, Ads, T, P)
+
+            if insert:
+                insert_into_csv(name, ads_type, BET, Pore, Ads, T, P)
+            
+            return span
+
+            
+    @app.callback(
+        [
+            Output('input-name', 'value'),
+            Output('input-type', 'value'),
+            Output('input-BET', 'value'),
+            Output('input-Pore', 'value'),
+            Output('input-Ads', 'value'),
+            Output('input-T', 'value'),
+            Output('input-P', 'value')
+        ],
+        Input('submit-btn', 'n_clicks')
+    )
+    def clear_fields(n_clicks):
+        return ['', ''] + [None for i in range(5)]
+
 
     @app.callback(
         Output('download-dataframe-csv', 'data'),
