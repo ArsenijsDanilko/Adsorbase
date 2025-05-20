@@ -28,16 +28,16 @@ blabla
 
 First, clone the repo on your machine:  
 
-    ```bash
-    git clone https://github.com/ArsenijsDanilko/Adsorbase.git
-    ```
+```bash
+git clone https://github.com/ArsenijsDanilko/Adsorbase.git
+```
 
 Then, navigate to the directory containing the package, and install it using `pip`. We recommend doing that in a virtual environment such as venv or conda, but it is not strictly necessary.
   
-    ```bash
-    cd Adsorbase
-    pip install -e .
-    ```
+```bash
+cd Adsorbase
+pip install -e .
+```
   
 If you do not intend to modify the source code of the package, using the `-e` flag in the command above is not necessary.
 
@@ -54,11 +54,10 @@ Pip should handle them automatically when installing adsorbase. For developers, 
 
 1. In a python file or Jupyter notebook, import the `launch` function, and call it.
 
-        ```python
-        from adsorbase import launch
-
-        launch()
-        ```
+    ```python
+    from adsorbase import launch
+    launch()
+    ```
 
 1. Open your browser and navigate to the link provided in the output (usually <http://127.0.0.1:8050/>). That's it!.  
 1. You can choose the axes of the graph using the dropdowns at the top of the page, and adjust which data appears when hovering your cursor over a data point. The data can be filtered according to the conditions in which the adsorbent's characteristics were measured, and you can zoom in or out by simmply click-and-dragging the plot.
