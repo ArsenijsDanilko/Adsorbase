@@ -239,7 +239,7 @@ def register_callbacks(app: Dash) -> None:
                 data=filtered_data,
                 style_table={"overflowX": "auto"},
                 style_header={
-                    "backgroundColor": "#1a252f" if dark else "#e1e5ec",
+                    "backgroundColor": "#34495e" if dark else "#e1e5ec",
                     "color": "white" if dark else "black"
                 },
                 style_cell={
@@ -251,7 +251,7 @@ def register_callbacks(app: Dash) -> None:
                 style_data_conditional=[
                     {
                         "if": {"row_index": "odd"},
-                        "backgroundColor": "#34495e" if dark else "#f9f9f9"
+                        "backgroundColor": "#353535" if dark else "#f9f9f9"
                     }
                 ],
                 page_size=10
