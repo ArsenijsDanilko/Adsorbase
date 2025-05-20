@@ -147,10 +147,8 @@ input_fields = [
     dcc.Input(id='input-name', type='text', placeholder='Name', style={'marginLeft' : '20px'}),
     dcc.Input(id='input-type', type='text', placeholder='Type of adsorbent'),
     dcc.Input(id='input-BET', type='number', placeholder='BET Surface Area'),
-    dcc.Input(id='input-Pore', type='number',
-              placeholder='Pore volume [cm³/g]'),
-    dcc.Input(id='input-Ads', type='number',
-              placeholder='Adsorption capacity'),
+    dcc.Input(id='input-Pore', type='number', placeholder='Pore volume [cm³/g]'),
+    dcc.Input(id='input-Ads', type='number', placeholder='Adsorption capacity'),
     dcc.Input(id='input-T', type='number', placeholder='Conditions T [K]'),
     dcc.Input(id='input-P', type='number', placeholder='Conditions P [bar]')
 ]

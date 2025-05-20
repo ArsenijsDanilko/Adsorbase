@@ -98,12 +98,13 @@ def register_callbacks(app: Dash) -> None:
                     f' : %{{customdata[{index}]:.2f}} <br>'
 
         fig.update_traces(
-            hovertemplate=('<b>%{customdata[0]}</b><br>' +
-                           '<i>%{customdata[1]}</i><br><br>' +
-
-                           f'{xaxis_column_name}' + ' : %{x:.2f} <br>' +
-                           f'{yaxis_column_name}' + ' : %{y:.2f} <br>' +
-                           additional_hover + '<extra></extra>'),
+            hovertemplate=(
+                '<b>%{customdata[0]}</b><br>' +
+                '<i>%{customdata[1]}</i><br><br>' +
+                f'{xaxis_column_name}' + ' : %{x:.2f} <br>' +
+                f'{yaxis_column_name}' + ' : %{y:.2f} <br>' +
+                additional_hover + '<extra></extra>'
+            ),
             mode='markers',
             marker={'sizemode': 'area',
                     'sizeref': 10,
@@ -111,6 +112,22 @@ def register_callbacks(app: Dash) -> None:
         )
 
         return fig
+
+    @app.callback(
+        [
+            Output('input-name', 'value'),
+            Output('input-type', 'value'),
+            Output('input-BET', 'value'),
+            Output('input-Pore', 'value'),
+            Output('input-Ads', 'value'),
+            Output('input-T', 'value'),
+            Output('input-P', 'value')
+        ],
+
+        Input('submit-btn', 'n_clicks')
+    )
+    def clear_fields(n_clicks):
+        return ['', ''] + [None for i in range(5)]
 
     def get_traces(relayout_data, restyle_data, figure) -> tuple[list, float, float, float, float]:
         """Get all series on the plotly scatter, as well as the zoom limits (`x_min`, `x_max`, `y_min`, `y_max`)"""
@@ -186,8 +203,8 @@ def register_callbacks(app: Dash) -> None:
 
         return f'Number of visible points : {count}'
 
-
     # Callback to connect the table to the filters
+
     @app.callback(
         Output('adsorbents-table', 'children'),
         Input('indicator-graphic', 'relayoutData'),
@@ -232,10 +249,10 @@ def register_callbacks(app: Dash) -> None:
                         row = dict(zip(column_names, custom))
                         filtered_data.append(row)
 
-            dark = not theme 
+            dark = not theme
 
-            children=dash_table.DataTable(
-                columns = [{"name": col, "id": col} for col in df.columns],
+            children = dash_table.DataTable(
+                columns=[{"name": col, "id": col} for col in df.columns],
                 data=filtered_data,
                 style_table={"overflowX": "auto"},
                 style_header={
