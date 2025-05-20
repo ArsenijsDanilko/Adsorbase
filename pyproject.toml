@@ -9,9 +9,11 @@ requires-python = ">=3.10"
 license = {file = "LICENSE"}
 description = "Asorbent data visualiser"
 dependencies = [
-    "dash>=2.18",
-    "pandas",
-    "plotly"
+    "dash>=3.0",
+    "dash_bootstrap_components",
+    "dash_bootstrap_templates",
+    "plotly",
+    "pandas"
 ]
 authors = [
     {name = "Arsenijs Danilko", email = "arsenijs.danilko@epfl.ch"},
@@ -19,22 +21,23 @@ authors = [
     {name = "Jérémy Demierre", email = "jeremy.demierre@epfl.ch"}
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Visualization",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dynamic = ["version"]
 
 [project.urls]
-source = "https://github.com/ArsenijsDanilko/adsorbase"
-tracker = "https://github.com/ArsenijsDanilko/adsorbase/issues"
+source = "https://github.com/ArsenijsDanilko/Adsorbase"
+tracker = "https://github.com/ArsenijsDanilko/Adsorbase/issues"
 
 [project.optional-dependencies]
 test = [
