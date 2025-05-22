@@ -22,7 +22,7 @@ Adsorbase can be installed either through PiPy, or by building the package from 
 
 ### From PiPy
 
-blabla
+Not yet implemented
 
 ### From source
 
@@ -43,14 +43,16 @@ If you do not intend to modify the source code of the package, using the `-e` fl
 
 ---
 
-## 📦 Dependencies
+### 📦 Dependencies
 
 Adsorbase depends on [plotly](https://dash.plotly.com/) for the interactive graph, and on [dash](https://plotly.com/dash/) for the interface. Installation is done through pip.  
-Pip should handle them automatically when installing adsorbase. For developers, hatchling, tox and pytest are recommended to build and test the code.
+Pip should handle all dependencies automatically when installing adsorbase. For developers, hatchling, tox and pytest are recommended to build and test the code.
 
 ---
 
-## 📌 How to Run
+## Usage
+
+### 1. Launching the web app
 
 1. In a python file or Jupyter notebook, import the `launch` function, and call it.
 
@@ -59,8 +61,13 @@ Pip should handle them automatically when installing adsorbase. For developers, 
     launch()
     ```
 
-1. Open your browser and navigate to the link provided in the output (usually <http://127.0.0.1:8050/>). That's it!.  
-1. You can choose the axes of the graph using the dropdowns at the top of the page, and adjust which data appears when hovering your cursor over a data point. The data can be filtered according to the conditions in which the adsorbent's characteristics were measured, and you can zoom in or out by simmply click-and-dragging the plot.
+1. Open your browser and navigate to the link provided in the output (usually <http://127.0.0.1:8050/>). That's it !
+
+---
+
+### 2. 
+
+The whole point of this project is the interactive scatter plot in the center of the page. Each data point represents one adsorbent species Hovering your mouse over a data point lets you know about the adsorbent
 
 ---
 
