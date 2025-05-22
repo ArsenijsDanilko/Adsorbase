@@ -1,4 +1,4 @@
-# 🧪 Adsorbase - Adsorbent Visualization & Management App
+# 🧪 Adsorbase - Adsorbent Visualization & Management Web App
 
 Welcome to Adsorbase, a user-friendly adsorbent data visualization package !  
 Adsorbase is a Dash-based interactive web application for visualizing, filtering, and managing a database of adsorbents based on various physical and experimental parameters. The app includes support for light/dark mode, dynamic graphs, and data export functionality.
@@ -62,14 +62,15 @@ Pip should handle all dependencies automatically when installing adsorbase. For 
 
 ---
 
-## Usage
+## 🔧 Usage
 
 ### 1. Launching the web app
 
-1. In a python file or Jupyter notebook, import the `launch` function, and call it.
+1. Create a .py file, and add the following lines of code to import the `launch` function and call it.
 
     ```python
     from adsorbase import launch
+
     launch()
     ```
 
@@ -77,42 +78,47 @@ Pip should handle all dependencies automatically when installing adsorbase. For 
 
 ### 2. Using Adsorbase
 
-1. Once opened, you're greeted with an interactive graph populated with adsorbent materials. When hovering over the points, you'll see the name of the adsorbent together with the type and the data from two axes.  
-1. You can choose the axes of the graph using the dropdowns at the top of the page, and adjust which data appears when hovering your cursor over a data point. The data can be filtered according to the conditions in which the adsorbent's characteristics were measured, and you can zoom in or out by simmply click-and-dragging the plot.
-1. All the points that are displayed on the graph are also present in the table at the end of the page. The total amount of points is shown right below the graph. The data from the table can be exported with a simple click of a button.
+1. Once opened, you're greeted with an interactive graph populated with adsorbent materials. You can choose the axes of the graph using the dropdown menus at the top of the page.
 
----
+1. When hovering over the points, you'll see a tooltip appear. The first and second lines correspond to the name and type of the selected adsorbent. The rest consists of the coordinates of the point.
 
-## 🔧 Adding New Adsorbents
+1. You can adjust which data appears when hovering your cursor over a data point, using the dropdown menu above the graph. The data can be filtered according to the conditions in which the adsorbent's characteristics were measured, and you can zoom in or out by simply click-and-dragging the plot.
 
-Users can add new adsorbents via the input form:
+1. All the points that are displayed on the graph are also present in the table at the end of the page. The total amount of points is shown right below the graph. The data from the table can be conveniently exported to a .csv file with a simple click of a button below the table.
+
+### Adding New Adsorbents
+
+Users can add new adsorbents to the existing database via the input form:
 
 - Name (text)
 - Type of Adsorbent (text)
 - BET Surface Area (numeric)
 - Pore Volume (numeric)
 - Adsorption Capacity (numeric)
-- Temperature (numeric)
-- Pressure (numeric)
+- Temperature during the measurements (numeric)
+- Pressure during the measurements (numeric)
 
 Simply click the "Actualize graph" button to see your newly added data on the figure.
+You can keep your extended database for the next session by exporting it as explained above.
 
 ---
 
 ## 🌗 Dark Mode
 
-Click the dark mode button in the top right to switch themes. The UI and graph visuals will adapt accordingly.
-
----
-
-## 📤 Exporting Data
-
-Click the **"Export Filtered Data"** button to download the current filtered dataset as `filtered_data.csv`.
+Don't like singing your eyeballs when working late? Click the dark mode button in the top right to switch themes. The UI and graph visuals will adapt accordingly.
 
 ---
 
 ## 📝 Notes
 
-- Custom entries persist between sessions via `custom.csv`.
+- Custom entries should persist internally between sessions. However, we recommend exporting them just in case when you close your session, to avoid any data loss.
+
 - Scatter plot supports dynamic zooming, with live feedback on how many points are visible.
+
 - Hover data can be customized using the dropdown menu above the figure.
+
+## Roadmap
+
+- Ability to import csv databases directly, rather than having to input them manually
+
+- Extending the database, and adding more properties for all adsorbents
