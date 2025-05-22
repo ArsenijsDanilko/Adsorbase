@@ -22,6 +22,10 @@ We created this interactive database to **bridge the gap between innovation and 
 - 📥 Export filtered data to CSV
 - 📄 Data table displaying filtered records
 
+## 🚀 Special thanks
+
+Before proceeding with the explanation of the setup, we'd like to inform you that all the data used in this project was pulled directly from a research paper called "Recent Progress in CO2 Capture by Porous Solid Materials" by Wenxing Ye et.al. Special thanks to their team.
+
 ---
 
 ## 📥 Installation
