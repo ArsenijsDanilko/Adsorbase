@@ -7,7 +7,7 @@ Adsorbase is a Dash-based interactive web application for visualizing, filtering
 
 ## Why We Built This
 
-The climate crisis demands urgent, science-driven solutions. Among the most promising technologies for reducing atmospheric CO₂ is **carbon capture**, with **adsorbent materials** playing a central role in making it efficient, scalable, and cost-effective. 
+The climate crisis demands urgent, science-driven solutions. Among the most promising technologies for reducing atmospheric CO₂ is **carbon capture**, with **adsorbent materials** playing a central role in making it efficient, scalable, and cost-effective.
 
 However, the field is vast and fragmented—researchers and developers are often faced with a scattered landscape of data buried in papers, spreadsheets, and proprietary formats.
 
@@ -34,7 +34,7 @@ Adsorbase can be installed either through PiPy, or by building the package from 
 
 ### From PiPy
 
-blabla
+Not yet implemented
 
 ### From source
 
@@ -55,14 +55,16 @@ If you do not intend to modify the source code of the package, using the `-e` fl
 
 ---
 
-## 📦 Dependencies
+### 📦 Dependencies
 
 Adsorbase depends on [plotly](https://dash.plotly.com/) for the interactive graph, and on [dash](https://plotly.com/dash/) for the interface. Installation is done through pip.  
-Pip should handle them automatically when installing adsorbase. For developers, hatchling, tox and pytest are recommended to build and test the code.
+Pip should handle all dependencies automatically when installing adsorbase. For developers, hatchling, tox and pytest are recommended to build and test the code.
 
 ---
 
-## 📌 How to Run
+## Usage
+
+### 1. Launching the web app
 
 1. In a python file or Jupyter notebook, import the `launch` function, and call it.
 
@@ -71,10 +73,13 @@ Pip should handle them automatically when installing adsorbase. For developers, 
     launch()
     ```
 
-2. Open your browser and navigate to the link provided in the output (usually <http://127.0.0.1:8050/>). That's it!. 
-3. Once opened, you're greeted with an interactive graph populated with adsorbent materials. When hovering over the points, you'll see the name of the adsorbent together with the type and the data from two axes.  
-4. You can choose the axes of the graph using the dropdowns at the top of the page, and adjust which data appears when hovering your cursor over a data point. The data can be filtered according to the conditions in which the adsorbent's characteristics were measured, and you can zoom in or out by simmply click-and-dragging the plot.
-5. All the points that are displayed on the graph are also present in the table at the end of the page. The total amount of points is shown right below the graph. The data from the table can be exported with a simple click of a button. 
+1. Open your browser and navigate to the link provided in the output (usually <http://127.0.0.1:8050/>). That's it!
+
+### 2. Using Adsorbase
+
+1. Once opened, you're greeted with an interactive graph populated with adsorbent materials. When hovering over the points, you'll see the name of the adsorbent together with the type and the data from two axes.  
+1. You can choose the axes of the graph using the dropdowns at the top of the page, and adjust which data appears when hovering your cursor over a data point. The data can be filtered according to the conditions in which the adsorbent's characteristics were measured, and you can zoom in or out by simmply click-and-dragging the plot.
+1. All the points that are displayed on the graph are also present in the table at the end of the page. The total amount of points is shown right below the graph. The data from the table can be exported with a simple click of a button.
 
 ---
 
