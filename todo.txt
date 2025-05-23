@@ -1,5 +1,0 @@
-- Formatter le graphe/ fait, mais darkmode à améliorer
-
-- rendre le site joli / mouais
-- faire le package/tests/README/etc
-- API pour communiquer en python avec la database

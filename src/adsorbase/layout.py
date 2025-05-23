@@ -48,7 +48,9 @@ subtitle = html.H3(
     }
 )
 
+
 x_dropdown = html.Div([
+    html.Label("Select x-axis:"),
     dcc.Dropdown(
         {col: col for col in axis_options},
         'Pore volume [cm³/g]',
@@ -66,6 +68,7 @@ x_dropdown = html.Div([
 )
 
 y_dropdown = html.Div([
+    html.Label("Select y-axis:"),
     dcc.Dropdown(
         {col: col for col in axis_options},
         'BET Surface Area [m²/g]',
