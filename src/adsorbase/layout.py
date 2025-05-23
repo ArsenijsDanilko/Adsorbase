@@ -1,10 +1,14 @@
 from dash import html, dcc, dash_table
 from math import floor, ceil
-from adsorbase.utils import load_df, axis_options
+from adsorbase.utils import load_df, axis_options, ROOT_PATH
 import dash_bootstrap_components as dbc
+import pandas as pd 
+import os 
 from dash_bootstrap_templates import ThemeSwitchAIO
 
+csv_file = ROOT_PATH / 'data/adsorbents.csv'
 df = load_df()
+custom_path = ROOT_PATH / 'data/custom.csv'
 
 color_mode_switch = html.Span([
     dbc.Label(className="fa fa-moon", html_for="color-mode-switch"),
@@ -85,11 +89,19 @@ y_dropdown = html.Div([
         }
 )
 
+def current_data() -> pd.DataFrame:
+        if os.path.exists(custom_path):
+            df = pd.read_csv(custom_path)
+        else:
+            df = pd.read_csv(csv_file)
+        return df
+
 temp_slider_text = html.Label('Select the right temperature conditions [K]',
                               style= {'marginLeft' : '20px'})
+filtered_df = current_data()
 temp_slider = dcc.RangeSlider(
-    floor(df['Conditions T [K]'].min()/10)*10,
-    ceil(df['Conditions T [K]'].max()/10)*10,
+    floor(filtered_df['Conditions T [K]'].min()/10)*10,
+    ceil(filtered_df['Conditions T [K]'].max()/10)*10,
     step=None,
     updatemode='drag',
     tooltip={'placement': 'bottom', 'always_visible': True},
@@ -100,9 +112,10 @@ temp_slider = dcc.RangeSlider(
 pressure_slider_text = html.Label('Select the right pressure conditions [bar]',
                                   style= {'marginLeft' : '20px',
                                           'marginTop' : '5px'})
+filtered_df = current_data()
 pressure_slider = dcc.RangeSlider(
-    floor(df['Conditions P [bar]'].min()),
-    ceil(df['Conditions P [bar]'].max()),
+    floor(filtered_df['Conditions P [bar]'].min()),
+    ceil(filtered_df['Conditions P [bar]'].max()),
     step=None,
     updatemode='drag',
     tooltip={'placement': 'bottom', 'always_visible': True},
@@ -147,30 +160,30 @@ input_title = html.H3('Extending the database',
 input_prompt = html.P('Note: use periods as decimal separators, not commas',
                       style={'marginLeft' : '20px'})
 input_fields = [
-    dcc.Input(id='input-name', type='text', placeholder='Name', style={'marginLeft' : '20px'}),
-    dcc.Input(id='input-type', type='text', placeholder='Type of adsorbent'),
-    dcc.Input(id='input-BET', type='number', placeholder='BET Surface Area'),
-    dcc.Input(id='input-Pore', type='number', placeholder='Pore volume [cm³/g]'),
-    dcc.Input(id='input-Ads', type='number', placeholder='Adsorption capacity'),
-    dcc.Input(id='input-T', type='number', placeholder='Conditions T [K]'),
-    dcc.Input(id='input-P', type='number', placeholder='Conditions P [bar]')
+    dcc.Input(id='input-name', type='text', placeholder='Name', style={'marginBottom' : '20px','marginLeft' : '20px', 'width' : '18%'}),
+    dcc.Input(id='input-type', type='text', placeholder='Type of adsorbent', style={'marginBottom' : '20px','marginLeft' : '20px','width' : '18%'}),
+    dcc.Input(id='input-BET', type='number', placeholder='BET Surface Area [m²/g]',style={'marginBottom' : '20px','marginLeft' : '20px','width' : '18%'}),
+    dcc.Input(id='input-Pore', type='number', placeholder='Pore volume [cm³/g]',style={'marginBottom' : '20px','marginLeft' : '20px','width' : '18%'}),
+    dcc.Input(id='input-Ads', type='number', placeholder='Adsorption capacity [mmol/g]',style={'marginBottom' : '20px','marginLeft' : '20px','width' : '18%'}),
+    dcc.Input(id='input-T', type='number', placeholder='Conditions T [K]',style={'marginBottom' : '20px','marginLeft' : '20px','width' : '18%'}),
+    dcc.Input(id='input-P', type='number', placeholder='Conditions P [bar]',style={'marginBottom' : '20px','marginLeft' : '20px','width' : '18%'})
 ]
 
 add_button = dbc.Button(
     'Add',
     id='submit-btn',
     n_clicks=0,
-    style={'marginLeft': '10px'}
+    style={'marginLeft': '20px'}
 )
 
 actualize_button = dbc.Button(
     'Actualize graph',
     id='actualize-btn',
     n_clicks=0,
-    style={'marginLeft': '10px'}
+    style={'marginLeft': '20px'}
 )
 
-add_output = html.Div(id='output', style={'color': 'green'})
+add_output = html.Div(id='output', style={'color': 'green', 'marginLeft': '20px'})
 
 filtered_table_title = html.H3(
     'Filtered Adsorbents Table',
