@@ -1,15 +1,12 @@
 from dash import Dash, Input, Output, State, html, dcc, dash_table
 from dash.exceptions import PreventUpdate
 import adsorbase.utils as utils
-import pandas as pd
-from numpy import nan, floor, ceil
+from numpy import floor, ceil
 import plotly.express as px
 from dash_bootstrap_templates import ThemeSwitchAIO, load_figure_template
 from typing import Any
 
-csv_file = utils.ROOT_PATH / 'data/adsorbents.csv'
 df = utils.load_df()
-custom_path = utils.ROOT_PATH / 'data/custom.csv'
 data_options = utils.column_titles[2:]
 
 load_figure_template(['cosmo', 'darkly'])
@@ -83,10 +80,8 @@ def register_callbacks(app: Dash) -> None:
                 (filtered_df['Conditions P [bar]'] <= p_range[1])
             ]
 
-        # Choose Plotly template based on theme
         plot_template = 'bootstrap' if theme else 'darkly'
 
-        # Plot the figure
         fig = px.scatter(
             filtered_df,
             x=xaxis_column_name,
@@ -205,8 +200,8 @@ def register_callbacks(app: Dash) -> None:
 
         return f'Number of visible points : {count}'
 
-    # Callback to connect the table to the filters
 
+    # Callback to connect the table to the filters
     @app.callback(
         Output('adsorbents-table', 'children'),
         Input('indicator-graphic', 'relayoutData'),
@@ -278,19 +273,6 @@ def register_callbacks(app: Dash) -> None:
 
         return children
 
-    def insert_into_csv(name, ads_type, BET, Pore, Ads, T, P) -> None:
-        num_data = [BET, Pore, Ads, T, P]
-
-        num_data = [nan if x is None else x for x in num_data]
-
-        new_data = pd.DataFrame(
-            [[name, ads_type] + num_data],
-            columns=list(df.head(1))
-        )
-
-        updated = pd.concat(
-            [utils.current_data(), new_data], ignore_index=True)
-        updated.to_csv(custom_path, index=False)
 
     def check_inputs(name, ads_type, BET, Pore, Ads, T, P) -> tuple[bool, html.Span | None]:
         insert = False
@@ -328,7 +310,7 @@ def register_callbacks(app: Dash) -> None:
             insert, span = check_inputs(name, ads_type, BET, Pore, Ads, T, P)
 
             if insert:
-                insert_into_csv(name, ads_type, BET, Pore, Ads, T, P)
+                utils.insert_into_csv(name, ads_type, BET, Pore, Ads, T, P)
 
             return span
 

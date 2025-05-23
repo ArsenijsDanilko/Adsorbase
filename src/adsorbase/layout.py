@@ -1,6 +1,6 @@
 from dash import html, dcc
 from math import floor, ceil
-from adsorbase.utils import load_df, current_data, axis_options
+from .utils import load_df, current_data, axis_options
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import ThemeSwitchAIO
 
