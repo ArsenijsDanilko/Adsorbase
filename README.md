@@ -76,6 +76,8 @@ Pip should handle all dependencies automatically when installing adsorbase. For 
 
 1. Open your browser and navigate to the link provided in the output (usually <http://127.0.0.1:8050/>). That's it!
 
+1. Quit the application by typing Ctrl+C in the terminal.
+
 ### 2. Using Adsorbase
 
 1. Once opened, you're greeted with an interactive graph populated with adsorbent materials. You can choose the axes of the graph using the dropdown menus at the top of the page.
@@ -105,7 +107,7 @@ You can keep your extended database for the next session by exporting it as expl
 
 ## 🌗 Dark Mode
 
-Don't like singing your eyeballs when working late? Click the dark mode button in the top right to switch themes. The UI and graph visuals will adapt accordingly.
+Don't like singing your eyeballs when working late ? Click the dark mode button in the top right to switch themes. The UI and graph visuals will adapt accordingly.
 
 ---
 
