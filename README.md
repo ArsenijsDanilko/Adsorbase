@@ -115,7 +115,7 @@ Don't like singing your eyeballs when working late ? Click the dark mode button 
 
 - Custom entries should persist internally between sessions. However, we recommend exporting them just in case when you close your session, to avoid any data loss.
 
-- Your new adsorbents can not be easily deleted. Be sure of your inputs before adding them to the Database ! 
+- Your new adsorbents cannot be easily deleted yet. Make sure your inputs are correct before adding them to the Database !
 
 - Scatter plot supports dynamic zooming, with live feedback on how many points are visible.
 
@@ -127,4 +127,4 @@ Don't like singing your eyeballs when working late ? Click the dark mode button 
 
 - Extending the database, and adding more properties for all adsorbents
 
-- Simplifying the deletion of the added adsorbents without the need to modify directly the csv file 
+- Simplifying the deletion of the added adsorbents without needing to modify the csv file directly

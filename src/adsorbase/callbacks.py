@@ -2,12 +2,10 @@ from dash import Dash, Input, Output, State, html, dcc, dash_table
 from dash.exceptions import PreventUpdate
 import adsorbase.utils as utils
 import pandas as pd
-from numpy import nan
-import os
+from numpy import nan, floor, ceil
 import plotly.express as px
 from dash_bootstrap_templates import ThemeSwitchAIO, load_figure_template
 from typing import Any
-
 
 csv_file = utils.ROOT_PATH / 'data/adsorbents.csv'
 df = utils.load_df()
@@ -18,6 +16,32 @@ load_figure_template(['cosmo', 'darkly'])
 
 
 def register_callbacks(app: Dash) -> None:
+
+    @app.callback(
+        Output('Temp-slider', 'min'),
+        Output('Temp-slider', 'max'),
+        Output('Pressure-slider', 'min'),
+        Output('Pressure-slider', 'max'),
+        Input('actualize-btn', 'n_clicks')
+    )
+    def update_filter_range(n_clicks) -> tuple:
+        t_min = floor(df['Conditions T [K]'].min()/10)*10
+        t_max = ceil(df['Conditions T [K]'].max()/10)*10
+
+        p_min = floor(df['Conditions P [bar]'].min()/10)*10
+        p_max = ceil(df['Conditions P [bar]'].max()/10)*10
+
+        if n_clicks:
+            data = utils.current_data()
+            try:
+                t_min = floor(data['Conditions T [K]'].min()/10)*10
+                t_max = ceil(data['Conditions T [K]'].max()/10)*10
+                p_min = floor(data['Conditions P [bar]'].min()/10)*10
+                p_max = ceil(data['Conditions P [bar]'].max()/10)*10
+            except Exception as e:
+                print('Error updating sliders:', e)
+
+        return (t_min, t_max, p_min, p_max)
 
     # Callback to update hover dropdown options
     @app.callback(
@@ -31,15 +55,8 @@ def register_callbacks(app: Dash) -> None:
 
         return [{'label': col, 'value': col} for col in hover_candidates]
 
-    def current_data() -> pd.DataFrame:
-        if os.path.exists(custom_path):
-            df = pd.read_csv(custom_path)
-        else:
-            df = pd.read_csv(csv_file)
-        return df
 
     # Callback to update graph
-
     @app.callback(
         Output('indicator-graphic', 'figure'),
         Input('xaxis-column', 'value'),
@@ -54,7 +71,7 @@ def register_callbacks(app: Dash) -> None:
         if not xaxis_column_name or not yaxis_column_name:
             raise PreventUpdate
 
-        filtered_df = current_data()
+        filtered_df = utils.current_data()
         if t_range:
             filtered_df = filtered_df[
                 (t_range[0] <= filtered_df['Conditions T [K]']) &
@@ -79,7 +96,7 @@ def register_callbacks(app: Dash) -> None:
             symbol='Type of Adsorbent',
             hover_name=filtered_df.columns[0],
             title=f'{yaxis_column_name} as a function of {xaxis_column_name}',
-            custom_data=list(df.head(1)),
+            custom_data=list(filtered_df.head(1)),
             template=plot_template,
             color_discrete_sequence=px.colors.qualitative.Vivid
         )
@@ -114,9 +131,8 @@ def register_callbacks(app: Dash) -> None:
 
         return fig
 
-
     def get_traces(relayout_data, restyle_data, figure) -> tuple[list, float, float, float, float]:
-        """Get all series on the plotly scatter, as well as the zoom limits (`x_min`, `x_max`, `y_min`, `y_max`)"""
+        '''Get all series on the plotly scatter, as well as the zoom limits (`x_min`, `x_max`, `y_min`, `y_max`)'''
         visible_traces = []
 
         # Identify the visible traces
@@ -238,23 +254,23 @@ def register_callbacks(app: Dash) -> None:
             dark = not theme
 
             children = dash_table.DataTable(
-                columns=[{"name": col, "id": col} for col in df.columns],
+                columns=[{'name': col, 'id': col} for col in df.columns],
                 data=filtered_data,
-                style_table={"overflowX": "auto"},
+                style_table={'overflowX': 'auto'},
                 style_header={
-                    "backgroundColor": "#34495e" if dark else "#e1e5ec",
-                    "color": "white" if dark else "black"
+                    'backgroundColor': '#34495e' if dark else '#e1e5ec',
+                    'color': 'white' if dark else 'black'
                 },
                 style_cell={
-                    "backgroundColor": "#2b2b2b" if dark else "white",
-                    "color": "white" if dark else "black",
-                    "textAlign": "left",
-                    "padding": "5px",
+                    'backgroundColor': '#2b2b2b' if dark else 'white',
+                    'color': 'white' if dark else 'black',
+                    'textAlign': 'left',
+                    'padding': '5px',
                 },
                 style_data_conditional=[
                     {
-                        "if": {"row_index": "odd"},
-                        "backgroundColor": "#353535" if dark else "#f9f9f9"
+                        'if': {'row_index': 'odd'},
+                        'backgroundColor': '#353535' if dark else '#f9f9f9'
                     }
                 ],
                 page_size=10
@@ -272,23 +288,26 @@ def register_callbacks(app: Dash) -> None:
             columns=list(df.head(1))
         )
 
-        updated = pd.concat([current_data(), new_data], ignore_index=True)
+        updated = pd.concat(
+            [utils.current_data(), new_data], ignore_index=True)
         updated.to_csv(custom_path, index=False)
 
     def check_inputs(name, ads_type, BET, Pore, Ads, T, P) -> tuple[bool, html.Span | None]:
         insert = False
         span = None
         if '' in (name, ads_type):
-            span = html.Span('Error : Please enter a name and type', style={'color': 'red'})
+            span = html.Span(
+                'Error : Please enter a name and type', style={'color': 'red'})
 
         if (BET, Pore, Ads).count(None) >= 2:
             span = html.Span('Error : Please enter at least two of the fields' +
-                '"BET surface area",' +
-                '"Pore Volume" and "Adsorption capacity"',
-                style={'color': 'red'})
+                             "'BET surface area'," +
+                             "'Pore Volume' and 'Adsorption capacity'",
+                             style={'color': 'red'})
         else:
             insert = True
-            span = html.Div(f'Added : {name}, {ads_type}, {BET}, {Pore}, {Ads}, {T}, {P}')
+            span = html.Div(
+                f'Added : {name}, {ads_type}, {BET}, {Pore}, {Ads}, {T}, {P}')
 
         return (insert, span)
 
@@ -310,10 +329,9 @@ def register_callbacks(app: Dash) -> None:
 
             if insert:
                 insert_into_csv(name, ads_type, BET, Pore, Ads, T, P)
-            
+
             return span
 
-            
     @app.callback(
         [
             Output('input-name', 'value'),
@@ -329,7 +347,6 @@ def register_callbacks(app: Dash) -> None:
     def clear_fields(n_clicks):
         return ['', ''] + [None for i in range(5)]
 
-
     @app.callback(
         Output('download-dataframe-csv', 'data'),
         Input('export-btn', 'n_clicks'),
@@ -340,7 +357,7 @@ def register_callbacks(app: Dash) -> None:
         prevent_initial_call=True
     )
     def export_filtered_data(n_clicks, x_col, y_col, t_range, p_range):
-        dff = current_data()
+        dff = utils.current_data()
 
         if t_range:
             dff = dff[(dff['Conditions T [K]'] >= t_range[0]) &
