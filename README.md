@@ -34,7 +34,12 @@ Adsorbase can be installed either through PiPy, or by building the package from 
 
 ### From PiPy
 
-Not yet implemented
+It is recommended to install Adsorbase in a venv or conda virtual environment, though it is not strictly necessary.  
+To install the package from PyPi, run the following command in your terminal:
+
+```bash
+pip install adsorbase
+```
 
 ### From source
 

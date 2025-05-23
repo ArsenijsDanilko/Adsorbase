@@ -9,9 +9,9 @@ requires-python = ">=3.10"
 license = {file = "LICENSE"}
 description = "Asorbent data visualiser"
 dependencies = [
-    "dash>=3.0",
     "dash_bootstrap_components",
     "dash_bootstrap_templates",
+    "dash",
     "plotly",
     "pandas",
     "numpy"
@@ -57,17 +57,20 @@ doc = [
 [tool.hatch.version]
 path = "src/adsorbase/__init__.py"
 
-[tool.pytest.ini_options]
-testpaths = [
-    "tests",
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/README.md"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/adsorbase"]
+include = [
+    "src/adsorbase/data/**"
 ]
 
-[tool.coverage.run]
-omit = [
-    '__init__.py'
+[tool.hatch.build]
+include = [
+    "src/adsorbase/data/*.csv",
+    "src/adsorbase/data/*.py"
 ]
 
-[tool.coverage.report]
-exclude_also = [
-    "if __name__ == .__main__.:",
-]
+[tool.hatch.publish.indexes.testpypi]
+url = "https://test.pypi.org/legacy/"
