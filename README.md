@@ -55,7 +55,7 @@ If you do not intend to modify the source code of the package, using the `-e` fl
 
 ---
 
-### 📦 Dependencies
+## 📦 Dependencies
 
 Adsorbase depends on [plotly](https://dash.plotly.com/) for the interactive graph, and on [dash](https://plotly.com/dash/) for the interface. Installation is done through pip.  
 Pip should handle all dependencies automatically when installing adsorbase. For developers, hatchling, tox and pytest are recommended to build and test the code.
@@ -88,7 +88,7 @@ Pip should handle all dependencies automatically when installing adsorbase. For 
 
 1. All the points that are displayed on the graph are also present in the table at the end of the page. The total amount of points is shown right below the graph. The data from the table can be conveniently exported to a .csv file with a simple click of a button below the table.
 
-### Adding New Adsorbents
+## 3. Adding New Adsorbents
 
 Users can add new adsorbents to the existing database via the input form:
 
@@ -105,7 +105,7 @@ You can keep your extended database for the next session by exporting it as expl
 
 ---
 
-## 🌗 Dark Mode
+### 4. Dark Mode
 
 Don't like singing your eyeballs when working late ? Click the dark mode button in the top right to switch themes. The UI and graph visuals will adapt accordingly.
 
@@ -119,7 +119,7 @@ Don't like singing your eyeballs when working late ? Click the dark mode button 
 
 - Hover data can be customized using the dropdown menu above the figure.
 
-## Roadmap
+## 📍 Roadmap
 
 - Ability to import csv databases directly, rather than having to input them manually
 
