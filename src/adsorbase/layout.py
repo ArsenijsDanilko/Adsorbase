@@ -197,7 +197,7 @@ filtered_table = dcc.Loading(
 )
 
 export_button = dbc.Button(
-    'Export Filtered Data',
+    'Export Data',
     id='export-btn',
     n_clicks=0,
     style={'marginTop': '20px',
