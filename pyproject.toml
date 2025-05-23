@@ -13,7 +13,8 @@ dependencies = [
     "dash_bootstrap_components",
     "dash_bootstrap_templates",
     "plotly",
-    "pandas"
+    "pandas",
+    "numpy"
 ]
 authors = [
     {name = "Arsenijs Danilko", email = "arsenijs.danilko@epfl.ch"},
@@ -45,7 +46,6 @@ test = [
     "pytest",
     "pytest-cov",
     "tox",
-    "genbadge[coverage]",
 ]
 doc = [
     "furo",
