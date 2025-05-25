@@ -1,4 +1,4 @@
-from .app import app
+from adsorbase.app import app
 
 def launch():
     app.run(debug=True)
